@@ -6,10 +6,10 @@ from app.app import create_app
 app = create_app()
 
 
-async def main() -> None:
+async def run() -> None:
     config = uvicorn.Config(
         "main:app", 
-        host="0.0.0.0", 
+        host="127.0.0.1", 
         port=8000, 
         reload=False
     )
@@ -20,4 +20,5 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(run())
