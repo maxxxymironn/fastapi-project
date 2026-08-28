@@ -1,14 +1,20 @@
-from pydantic import BaseModel, SecretStr, Field
+from datetime import datetime
+from pydantic import BaseModel, SecretStr, Field, ConfigDict
 
 
-class CreateUserSchema(BaseModel):
-    login: str = Field(max_length=128)
-    password: SecretStr = Field(max_length=128)
-    username: str | None = Field(login, max_length=128)
+class BaseUserShema(BaseModel):
+    username: str = Field(max_length=128)
+    email: str | None = Field(default=None, max_length=128)
+    first_name: str | None = Field(default=None, max_length=128)
+    last_name: str | None = Field(default=None, max_length=128)
 
 
-class ResponceUserSchema(BaseModel):
+class CreateUserSchema(BaseUserShema):
+    password: str = Field(max_length=128)
+
+
+class ResponseUserSchema(BaseUserShema):
     id: int
-    login: str = Field(max_length=128)
-    password: SecretStr = Field(max_length=128)
-    username: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)

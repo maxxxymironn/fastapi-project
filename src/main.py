@@ -2,6 +2,7 @@ import asyncio
 import uvicorn
 
 from app.app import create_app
+from app.infrastucture.database import Base, db
 
 app = create_app()
 
@@ -20,5 +21,7 @@ async def run() -> None:
 
 
 if __name__ == "__main__":
+    Base.metadata.create_all(bind=db._engine)
+
     loop = asyncio.get_event_loop()
     loop.run_until_complete(run())

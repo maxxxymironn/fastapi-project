@@ -7,7 +7,7 @@ from app.api.comment import router as comment_router
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(root_path="/api/v1")
+    app = FastAPI()
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
