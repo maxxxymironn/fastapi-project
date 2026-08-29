@@ -10,8 +10,8 @@ class GetUserByUsernameUseCase:
         self._db = db
         self._repo = UserRepository()
 
-    def execute(self, username: str)-> ResponseUserSchema:
+    async def execute(self, username: str)-> ResponseUserSchema:
         with self._db.session() as session:
-            user = self._repo.get_user(session, username)
+            user = await self._repo.get_user(session, username)
 
         return ResponseUserSchema.model_validate(obj=user)

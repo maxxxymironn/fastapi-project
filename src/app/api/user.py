@@ -1,14 +1,13 @@
-from app.domain.user.use_cases.update_user_attributes import UpdateUserAttributesUseCase
-from app.schemas.user import BaseUserSchema
 from fastapi import APIRouter, status, HTTPException, Depends
 
-from app.schemas.user import CreateUserSchema, ResponseUserSchema
+from app.schemas.user import CreateUserSchema, ResponseUserSchema, EditUserSchema
 from app.domain.user.use_cases.get_user import GetUserByUsernameUseCase
 from app.domain.user.use_cases.create_user import CreateUserUseCase
+from app.domain.user.use_cases.edit_user import EditUserUseCase
 from app.api.depends import (
     get_case_get_user_by_username,
     get_case_create_user,
-    get_case_update_user_attributes
+    get_case_edit_user
 )
 
 
@@ -25,7 +24,7 @@ async def get_user_by_username(
     use_case: GetUserByUsernameUseCase = Depends(get_case_get_user_by_username)
 ) -> ResponseUserSchema:
     try:
-        return use_case.execute(username)
+        return await use_case.execute(username)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
@@ -40,11 +39,9 @@ async def create_user(
     use_case: CreateUserUseCase = Depends(get_case_create_user)
 ) -> ResponseUserSchema:
     try:
-        return use_case.execute(user_data)
+        return await use_case.execute(user_data)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
 
 @router.patch(
@@ -53,12 +50,10 @@ async def create_user(
     response_model=ResponseUserSchema
 )
 async def edit_profile(
-    user_data: BaseUserSchema,
-    use_case: UpdateUserAttributesUseCase = Depends(get_case_update_user_attributes)
+    user_data: EditUserSchema,
+    use_case: EditUserUseCase = Depends(get_case_edit_user)
 ) -> ResponseUserSchema:
     try:
-        return use_case.execute(user_data)
+        return await use_case.execute(user_data)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)

@@ -1,91 +1,96 @@
-from starlette.status import HTTP_405_METHOD_NOT_ALLOWED
+from app.schemas.post import EditPostSchema
+from fastapi import Depends
 from datetime import datetime
 
 from fastapi import APIRouter, status, HTTPException
 
-from app.schemas.post import PostResponseSchema, PostCreateSchema
-
+from app.schemas.post import CreatePostSchema, ResponsePostSchema
+from app.api.depends import (
+    get_case_create_post, 
+    get_case_get_post_by_title, 
+    get_case_delete_post,
+    get_case_edit_post,
+    get_case_get_post_list
+)
+from app.domain.post.use_cases.create_post import CreatePostUseCase
+from app.domain.post.use_cases.get_post_by_title import GetPostByTitleUseCase
+from app.domain.post.use_cases.delete_post import DeletePostUseCase
+from app.domain.post.use_cases.edit_post import EditPostUseCase
+from app.domain.post.use_cases.get_post_list import GetPostListUseCase
 
 router = APIRouter()
 
 
 @router.get(
     "/posts", 
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
+    response_model=list[ResponsePostSchema]
 )
-async def get_posts():
-    return {"hello": "world!"}
+async def get_post_list(
+    use_case: GetPostListUseCase = Depends(get_case_get_post_list)
+):
+    try:
+        return await use_case.execute()
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
     
 
 @router.get(
-    "/posts/{post_id}", 
+    "/posts/{id}", 
     status_code=status.HTTP_200_OK, 
-    response_model=PostResponseSchema
+    response_model=ResponsePostSchema
 )
-async def get_post_detail(post_id: int):
-    default_post = PostResponseSchema(
-        id=1, title="title", text="text-text-text",
-        is_published=True, author_id=1, 
-        publicated_at=datetime.now(),
-        updated_at=datetime.now()
-    )
-    return default_post
+async def get_post_by_id(
+    id: int,
+    use_case: GetPostByTitleUseCase = Depends(get_case_get_post_by_title)
+) -> ResponsePostSchema:
+    try:
+        return await use_case.execute(id)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
 
 @router.post(
     "/posts", 
     status_code=status.HTTP_201_CREATED, 
-    response_model=PostResponseSchema
+    response_model=ResponsePostSchema
 )
-async def create_post(post: PostCreateSchema):
-    if len(post.title) == 0:
-        raise HTTPException(
-            detail="post must have title",
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT
-        )
-
-    new_post = {
-        "id": 1,
-        "title": post.title,
-        "text": post.text,
-        "is_pub": post.is_published,
-        "image": post.image_path,
-        "author_id": post.author_id,
-        "category_id": post.category_id,
-        "location_id": post.location_id,
-        "pub_at": post.publicated_at,
-        "updated_at": post.publicated_at
-    }
-    
-    return PostResponseSchema.model_validate(obj=new_post)
+async def create_post(
+    post_data: CreatePostSchema, 
+    use_case: CreatePostUseCase = Depends(get_case_create_post)
+) -> ResponsePostSchema:
+    try:
+        return await use_case.execute(post_data)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
 
 @router.patch(
-    "/posts/{post_id}", 
+    "/posts/{id}", 
     status_code=status.HTTP_200_OK, 
-    response_model=PostResponseSchema
+    response_model=ResponsePostSchema
 )
-async def edit_post(post_id: int, post: PostCreateSchema):
-    default_post = PostResponseSchema(
-        id=5, title="title", text="text-text-text",
-        is_published=True, author_id=1, 
-        publicated_at=datetime.now(),
-        updated_at=datetime.now()
-    )
-
-    if post_id == 5:
-        return {"status": "ok"}
-
-    return HTTPException(
-        detail="no babe",
-        status_code=status.HTTP_400_BAD_REQUEST
-    )
+async def edit_post(
+    id: int,
+    post_data: EditPostSchema,
+    use_case: EditPostUseCase = Depends(get_case_edit_post)
+) -> ResponsePostSchema:
+    try:
+        return await use_case.execute(id, post_data)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
 
 @router.delete(
-    "/posts/{post_id}", 
+    "/posts/{id}", 
     status_code=status.HTTP_204_NO_CONTENT
 )
-async def delete_post(post_id: int):
-    return {"status": "deleted"}
-
+async def delete_post(
+    id: int,
+    use_case: DeletePostUseCase = Depends(get_case_delete_post)
+) -> None:
+    try:
+        return await use_case.execute(id)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)

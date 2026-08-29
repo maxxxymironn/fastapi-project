@@ -1,6 +1,12 @@
+from app.domain.post.use_cases.get_post_by_title import GetPostByTitleUseCase
 from app.domain.user.use_cases.create_user import CreateUserUseCase
 from app.domain.user.use_cases.get_user import GetUserByUsernameUseCase
-from app.domain.user.use_cases.update_user_attributes import UpdateUserAttributesUseCase
+from app.domain.user.use_cases.edit_user import EditUserUseCase
+from app.domain.post.use_cases.create_post import CreatePostUseCase
+from app.domain.post.use_cases.get_post_by_title import GetPostByTitleUseCase
+from app.domain.post.use_cases.delete_post import DeletePostUseCase
+from app.domain.post.use_cases.edit_post import EditPostUseCase
+from app.domain.post.use_cases.get_post_list import GetPostListUseCase
 
 
 def get_case_create_user() -> CreateUserUseCase:
@@ -11,5 +17,25 @@ def get_case_get_user_by_username() -> GetUserByUsernameUseCase:
     return GetUserByUsernameUseCase()
 
 
-def get_case_update_user_attributes() -> UpdateUserAttributesUseCase:
-    return UpdateUserAttributesUseCase()
+def get_case_edit_user() -> EditUserUseCase:
+    return EditUserUseCase()
+
+
+def get_case_create_post() -> CreatePostUseCase:
+    return CreatePostUseCase()
+
+
+def get_case_get_post_by_title() -> GetPostByTitleUseCase:
+    return GetPostByTitleUseCase()
+
+
+def get_case_delete_post() -> DeletePostUseCase:
+    return DeletePostUseCase()
+
+
+def get_case_edit_post() -> EditPostUseCase:
+    return EditPostUseCase()
+
+
+def get_case_get_post_list() -> GetPostListUseCase:
+    return GetPostListUseCase()

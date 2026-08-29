@@ -1,27 +1,26 @@
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
-class PostCreateSchema(BaseModel):
-    title: str = Field(max_length=128)
+class EditPostSchema(BaseModel):
+    title: str = Field(max_length=256)
     text: str
-    is_published: bool | None = None
-    image_path: str | None = None
-    author_id: int
-    category_id: int | None = None
-    location_id: int | None = None
+    is_published: bool | None = True
+    image_url: str | None = None
+
+
+class CreatePostSchema(EditPostSchema):
+    author_username: str
     publicated_at: datetime | None = None
+    # category_title: str
+    # location_title: str | None = None
 
 
-class PostResponseSchema(BaseModel):
+class ResponsePostSchema(CreatePostSchema):
     id: int
-    title: str = Field(max_length=128)
-    text: str
-    is_published: bool
-    image_path: str | None = None
-    author_id: int
-    category_id: int | None = None
-    location_id: int | None = None
-    publicated_at: datetime
+    created_at: datetime
     updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+

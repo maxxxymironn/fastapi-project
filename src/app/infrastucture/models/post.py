@@ -10,13 +10,13 @@ class PostModel(Base):
     __tablename__ = "posts"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    author_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
-    category_id: Mapped[int | None] = mapped_column(ForeignKey("categories.id", ondelete="SET NULL"))
+    author_username: Mapped[str] = mapped_column(ForeignKey("users.username", ondelete="CASCADE"))
+    # category_title: Mapped[str] = mapped_column(ForeignKey("categories.title", ondelete="SET NULL"))
     image_url: Mapped[str | None] = mapped_column(String)
-    location_id: Mapped[int | None] = mapped_column(ForeignKey("locations.id", ondelete="SET NULL"))
+    # location_title: Mapped[str] = mapped_column(ForeignKey("locations.title", ondelete="SET NULL"))
     title: Mapped[str] = mapped_column(String(256))
-    text: Mapped[str | None] = mapped_column(Text)
-    publication_date: Mapped[datetime]
-    updated_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    text: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    publicated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     is_published: Mapped[bool] = mapped_column(default=True)
