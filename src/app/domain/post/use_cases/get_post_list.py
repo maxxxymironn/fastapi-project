@@ -8,9 +8,9 @@ class GetPostListUseCase:
         self._db = db
         self._repo = PostRepository()
 
-    async def execute(self):
+    async def execute(self, category: str | None):
         with self._db.session() as session:
-            post_list = await self._repo.get_post_list(session)
+            post_list = await self._repo.get_post_list(session, category)
         
         return [ResponsePostSchema.model_validate(post) for post in post_list]
         

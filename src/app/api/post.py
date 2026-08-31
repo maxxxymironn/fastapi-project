@@ -1,9 +1,8 @@
-from app.schemas.post import EditPostSchema
-from fastapi import Depends
 from datetime import datetime
 
-from fastapi import APIRouter, status, HTTPException
+from fastapi import APIRouter, status, HTTPException, Depends, Query
 
+from app.schemas.post import EditPostSchema
 from app.schemas.post import CreatePostSchema, ResponsePostSchema
 from app.api.depends import (
     get_case_create_post, 
@@ -26,14 +25,28 @@ router = APIRouter()
     status_code=status.HTTP_200_OK,
     response_model=list[ResponsePostSchema]
 )
+@router.get(
+    "/",
+    status_code=status.HTTP_200_OK,
+    response_model=list[ResponsePostSchema]
+)
 async def get_post_list(
+    category: str = Query(default=None),
     use_case: GetPostListUseCase = Depends(get_case_get_post_list)
 ):
     try:
-        return await use_case.execute()
+        return await use_case.execute(category)
     except Exception as e:
         print(e)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+
+
+@router.get(
+    "/category/{category_name}",
+    status_code=status.HTTP_200_OK,
+    response_model=list[ResponsePostSchema]
+)
+
     
 
 @router.get(
