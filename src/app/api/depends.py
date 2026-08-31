@@ -1,3 +1,7 @@
+from app.domain.comment.delete_comment import DeleteCommentUseCase
+from app.domain.comment.edit_comment import EditCommentUseCase
+from app.domain.comment.create_comment import CreateCommentUseCase
+from app.domain.comment.get_comment_list import GetCommentListUseCase
 from app.domain.post.use_cases.get_post_by_title import GetPostByTitleUseCase
 from app.domain.user.use_cases.create_user import CreateUserUseCase
 from app.domain.user.use_cases.get_user import GetUserByUsernameUseCase
@@ -39,3 +43,19 @@ def get_case_edit_post() -> EditPostUseCase:
 
 def get_case_get_post_list() -> GetPostListUseCase:
     return GetPostListUseCase()
+
+
+def get_case_get_comment_list() -> GetCommentListUseCase:
+    return GetCommentListUseCase()
+
+
+def get_case_create_comment() -> CreateCommentUseCase:
+    return CreateCommentUseCase()
+
+
+def get_case_edit_comment() -> EditCommentUseCase:
+    return EditCommentUseCase()
+
+
+def get_case_delete_comment() -> DeleteCommentUseCase:
+    return DeleteCommentUseCase()

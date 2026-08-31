@@ -1,19 +1,19 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
-class CreateCommentSchema(BaseModel):
+class EditCommentSchema(BaseModel):
     text: str
     image_url: str | None
-    post_id: int
+
+
+class CreateCommentSchema(EditCommentSchema):
     author_id: int
 
 
-class ResponseCommentSchema(BaseModel):
+class ResponseCommentSchema(CreateCommentSchema):
     id: int
-    text: str
-    image_url: str | None
-    post_id: int
-    author_id: int
     created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
