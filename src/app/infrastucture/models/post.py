@@ -11,10 +11,9 @@ class PostModel(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     author_username: Mapped[str] = mapped_column(ForeignKey("users.username", ondelete="CASCADE"))
-    # category_title: Mapped[str] = mapped_column(ForeignKey("categories.title", ondelete="SET NULL"))
-    # category_slug: Mapped[str] = mapped_column(ForeignKey("categories.slug", ondelete="SET NULL"))
+    category_slug: Mapped[str] = mapped_column(ForeignKey("categories.slug", ondelete="SET NULL"))
     image_url: Mapped[str | None] = mapped_column(String)
-    # location_title: Mapped[str] = mapped_column(ForeignKey("locations.title", ondelete="SET NULL"))
+    location_name: Mapped[str] = mapped_column(ForeignKey("locations.name", ondelete="SET NULL"))
     title: Mapped[str] = mapped_column(String(256))
     text: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

@@ -29,6 +29,15 @@ class PostRepository:
         
         return post_list
 
+    async def get_post_list_by_category(self, session: Session, category_slug: str):
+        query = (
+            select(self._model)
+            .where(self._model.category_slug == category_slug)
+        )
+        post_list = session.scalars(query).all()
+
+        return post_list
+
     async def create_post(self, session: Session, post_data: CreatePostSchema) -> PostModel:
         query = (
             insert(self._model)

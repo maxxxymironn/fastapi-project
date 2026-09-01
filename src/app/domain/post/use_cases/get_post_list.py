@@ -8,14 +8,12 @@ class GetPostListUseCase:
         self._db = db
         self._repo = PostRepository()
 
-    # async def execute(self, category: str | None):
-    # if not category:
-    #   call default get_post_list
-    # else:
-    #   call get_post_list_by_category
-    async def execute(self):
+    async def execute(self, category_slug: str):
         with self._db.session() as session:
-            post_list = await self._repo.get_post_list(session)
+            if not category_slug:
+                post_list = await self._repo.get_post_list(session)
+            else:
+                post_list = await self._repo.get_post_list_by_category(session, category_slug)
         
         return [ResponsePostSchema.model_validate(post) for post in post_list]
         
