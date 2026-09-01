@@ -31,11 +31,12 @@ router = APIRouter()
     response_model=list[ResponsePostSchema]
 )
 async def get_post_list(
-    category: str = Query(default=None),
+    # category: str = Query(default=None),
     use_case: GetPostListUseCase = Depends(get_case_get_post_list)
 ):
     try:
-        return await use_case.execute(category)
+        # return await use_case.execute(category)
+        return await use_case.execute()
     except Exception as e:
         print(e)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)

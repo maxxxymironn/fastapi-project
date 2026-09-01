@@ -13,7 +13,7 @@ class EditPostSchema(BaseModel):
 class CreatePostSchema(EditPostSchema):
     author_username: str
     publicated_at: datetime | None = None
-    category_slug: str
+    # category_slug: str
     # location_title: str | None = None
 
 

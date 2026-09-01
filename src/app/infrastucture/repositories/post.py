@@ -23,12 +23,10 @@ class PostRepository:
 
         return post
 
-    async def get_post_list(self, session: Session, category: str | None):
-        if not category:
-            query = select(self._model)
-        else: query = select(self._model).where(self._model.category)
-
+    async def get_post_list(self, session: Session):
+        query = select(self._model)
         post_list = session.scalars(query).all()
+        
         return post_list
 
     async def create_post(self, session: Session, post_data: CreatePostSchema) -> PostModel:
