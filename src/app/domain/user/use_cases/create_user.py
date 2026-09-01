@@ -11,6 +11,5 @@ class CreateUserUseCase:
     async def execute(self, user_data: CreateUserSchema) -> ResponseUserSchema:
         with self._db.session() as session:
             user = await self._repo.create_user(session, user_data)
-            
+
         return ResponseUserSchema.model_validate(user)
-        

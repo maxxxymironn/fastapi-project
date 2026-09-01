@@ -4,7 +4,7 @@ from app.schemas.post import EditPostSchema, ResponsePostSchema
 
 
 class EditPostUseCase:
-    def __init__(self): 
+    def __init__(self):
         self._db = db
         self._repo = PostRepository()
 
@@ -13,4 +13,3 @@ class EditPostUseCase:
             post = await self._repo.update_post(session, id, user_data)
 
         return ResponsePostSchema.model_validate(post)
-        

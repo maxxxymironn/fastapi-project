@@ -1,7 +1,5 @@
-from sqlalchemy import update
 from fastapi import HTTPException, status
-
-from sqlalchemy import select, insert
+from sqlalchemy import insert, select, update
 from sqlalchemy.orm import Session
 
 from app.infrastucture.models.user import UserModel
@@ -13,21 +11,18 @@ class UserRepository:
         self._model = UserModel
 
     async def get_user(self, session: Session, username: str) -> UserModel:
-        query = (
-            select(self._model)
-            .where(self._model.username == username)
-        )
+        query = select(self._model).where(self._model.username == username)
 
         user: UserModel | None = session.scalar(query)
         if not user:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
         return user
 
-    async def create_user(self, session: Session, user_data: CreateUserSchema) -> UserModel:
+    async def create_user(
+        self, session: Session, user_data: CreateUserSchema
+    ) -> UserModel:
         query = (
-            insert(self._model)
-            .values(user_data.model_dump())
-            .returning(self._model)
+            insert(self._model).values(user_data.model_dump()).returning(self._model)
         )
 
         try:
@@ -35,19 +30,18 @@ class UserRepository:
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail=f"user with username = {user_data.username} already exist"
+                detail=f"user with username = {user_data.username} already exist",
             )
         return created_user
 
-    async def update_user_attributes(self, session: Session, new_user_data: EditUserSchema) -> UserModel:
+    async def update_user_attributes(
+        self, session: Session, username: str, user_data: EditUserSchema
+    ) -> UserModel:
         query = (
             update(self._model)
-            .where(self._model.username == new_user_data.username)
-            .values(
-                first_name=new_user_data.first_name,
-                last_name=new_user_data.last_name,
-                email=new_user_data.email
-            ).returning(self._model)
+            .where(self._model.username == username)
+            .values(user_data.model_dump(exclude_none=True, exclude_unset=True))
+            .returning(self._model)
         )
 
         user = session.scalar(query)

@@ -13,7 +13,8 @@ class GetPostListUseCase:
             if not category_slug:
                 post_list = await self._repo.get_post_list(session)
             else:
-                post_list = await self._repo.get_post_list_by_category(session, category_slug)
-        
+                post_list = await self._repo.get_post_list_by_category(
+                    session, category_slug
+                )
+
         return [ResponsePostSchema.model_validate(post) for post in post_list]
-        

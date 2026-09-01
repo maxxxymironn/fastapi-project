@@ -1,6 +1,7 @@
-# pyenv and pyrefly
+# pyenv, pyrefly, ruff.toml
 .python-version
 pyrefly.toml
+ruff.toml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

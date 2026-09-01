@@ -1,9 +1,9 @@
-from fastapi import status, HTTPException
-from sqlalchemy import insert, delete, select, func, update
+from fastapi import HTTPException, status
+from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session
 
-from app.schemas.post import CreatePostSchema, EditPostSchema
 from app.infrastucture.models.post import PostModel
+from app.schemas.post import CreatePostSchema, EditPostSchema
 
 
 class PostRepository:
@@ -11,10 +11,7 @@ class PostRepository:
         self._model = PostModel
 
     async def get_post_by_id(self, session: Session, id: int) -> PostModel:
-        query = (
-            select(self._model)
-            .where(self._model.id == id)
-        )
+        query = select(self._model).where(self._model.id == id)
 
         post = session.scalar(query)
 
@@ -25,20 +22,17 @@ class PostRepository:
 
     async def get_post_list(self, session: Session):
         query = select(self._model)
-        post_list = session.scalars(query).all()
-        
-        return post_list
+        return session.scalars(query).all()
 
     async def get_post_list_by_category(self, session: Session, category_slug: str):
-        query = (
-            select(self._model)
-            .where(self._model.category_slug == category_slug)
-        )
+        query = select(self._model).where(self._model.category_slug == category_slug)
         post_list = session.scalars(query).all()
 
         return post_list
 
-    async def create_post(self, session: Session, post_data: CreatePostSchema) -> PostModel:
+    async def create_post(
+        self, session: Session, post_data: CreatePostSchema
+    ) -> PostModel:
         query = (
             insert(self._model)
             .values(post_data.model_dump(exclude_none=True, exclude_unset=True))
@@ -52,7 +46,9 @@ class PostRepository:
 
         return post
 
-    async def update_post(self, session: Session, id: int, post_data: EditPostSchema) -> PostModel:
+    async def update_post(
+        self, session: Session, id: int, post_data: EditPostSchema
+    ) -> PostModel:
         query = (
             update(self._model)
             .where(self._model.id == id)
@@ -68,11 +64,7 @@ class PostRepository:
         return post
 
     async def delete_post(self, session: Session, id: int) -> None:
-        query = (
-            delete(self._model)
-            .where(self._model.id == id)
-            .returning(self._model)
-        )
+        query = delete(self._model).where(self._model.id == id).returning(self._model)
 
         try:
             is_deleted = session.scalar(query) is not None

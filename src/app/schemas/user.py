@@ -1,20 +1,26 @@
 from datetime import datetime
-from pydantic import BaseModel, SecretStr, Field, ConfigDict
+
+from pydantic import BaseModel, ConfigDict, Field, SecretStr
 
 
-class EditUserSchema(BaseModel):
-    username: str = Field(max_length=128)
+class BaseUserSchema(BaseModel):
     email: str | None = Field(default=None, max_length=128)
     first_name: str | None = Field(default=None, max_length=128)
     last_name: str | None = Field(default=None, max_length=128)
 
 
-class CreateUserSchema(EditUserSchema):
+class EditUserSchema(BaseUserSchema):
+    username: str | None = Field(default=None, max_length=128)
+
+
+class CreateUserSchema(BaseUserSchema):
+    username: str = Field(max_length=128)
     password: str = Field(max_length=128)
 
 
-class ResponseUserSchema(EditUserSchema):
+class ResponseUserSchema(BaseUserSchema):
     id: int
+    password: SecretStr = Field(max_length=128)
     username: str = Field(max_length=128)
     created_at: datetime
 
