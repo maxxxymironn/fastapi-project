@@ -35,21 +35,6 @@ async def get_category_list(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
 
-@router.get(
-    "/category/{category_slug}",
-    status_code=status.HTTP_200_OK,
-    response_model=ResponseCategorySchema
-)
-async def get_category(
-    category_slug: str,
-    use_case: GetCategoryUseCase = Depends(get_get_category_case)
-) -> ResponseCategorySchema:
-    try:
-        return await use_case.execute(category_slug)
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
-
-
 @router.post(
     "/category",
     status_code=status.HTTP_201_CREATED,
@@ -66,8 +51,23 @@ async def create_category(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
 
+@router.get(
+    "/category/{category_slug}",
+    status_code=status.HTTP_200_OK,
+    response_model=ResponseCategorySchema
+)
+async def get_category(
+    category_slug: str,
+    use_case: GetCategoryUseCase = Depends(get_get_category_case)
+) -> ResponseCategorySchema:
+    try:
+        return await use_case.execute(category_slug)
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+
+
 @router.patch(
-    "/category",
+    "/category/{category_slug}",
     status_code=status.HTTP_200_OK,
     response_model=ResponseCategorySchema
 )
@@ -83,9 +83,8 @@ async def edit_category(
 
 
 @router.delete(
-    "/category",
-    status_code=status.HTTP_200_OK,
-    response_model=ResponseCategorySchema
+    "/category/{category_slug}",
+    status_code=status.HTTP_204_NO_CONTENT
 )
 async def delete_category(
     category_slug: str,

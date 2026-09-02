@@ -75,6 +75,6 @@ async def delete_post(
     id: int, use_case: DeletePostUseCase = Depends(get_case_delete_post)
 ) -> None:
     try:
-        return await use_case.execute(id)
+        await use_case.execute(id)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)

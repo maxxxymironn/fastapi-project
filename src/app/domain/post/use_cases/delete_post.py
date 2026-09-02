@@ -9,4 +9,4 @@ class DeletePostUseCase:
 
     async def execute(self, id: int):
         with self._db.session() as session:
-            return await self._repo.delete_post(session, id)
+            await self._repo.delete_post(session, id)

@@ -64,7 +64,11 @@ class PostRepository:
         return post
 
     async def delete_post(self, session: Session, id: int) -> None:
-        query = delete(self._model).where(self._model.id == id).returning(self._model)
+        query = (
+            delete(self._model)
+            .where(self._model.id == id)
+            .returning(self._model)
+        )
 
         try:
             is_deleted = session.scalar(query) is not None

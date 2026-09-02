@@ -7,6 +7,10 @@ from app.domain.comment.create_comment import CreateCommentUseCase
 from app.domain.comment.delete_comment import DeleteCommentUseCase
 from app.domain.comment.edit_comment import EditCommentUseCase
 from app.domain.comment.get_comment_list import GetCommentListUseCase
+from app.domain.location.create_location import CreateLocationUseCase
+from app.domain.location.delete_location import DeleteLocationUseCase
+from app.domain.location.get_location import GetLocationUseCase
+from app.domain.location.get_location_list import GetLocationListUseCase
 from app.domain.post.use_cases.create_post import CreatePostUseCase
 from app.domain.post.use_cases.delete_post import DeletePostUseCase
 from app.domain.post.use_cases.edit_post import EditPostUseCase
@@ -83,3 +87,19 @@ def get_edit_category_case() -> EditCategoryUseCase:
 
 def get_delete_category_case() -> DeleteCategoryUseCase:
     return DeleteCategoryUseCase()
+
+
+def get_get_location_list_case() -> GetLocationListUseCase:
+    return GetLocationListUseCase()
+
+
+def get_get_location_case() -> GetLocationUseCase:
+    return GetLocationUseCase()
+
+
+def get_create_location_case() -> CreateLocationUseCase:
+    return CreateLocationUseCase()
+
+
+def get_delete_location_case() -> DeleteLocationUseCase:
+    return DeleteLocationUseCase()
