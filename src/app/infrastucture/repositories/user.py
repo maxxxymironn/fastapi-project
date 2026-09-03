@@ -1,5 +1,5 @@
 from fastapi import HTTPException, status
-from sqlalchemy import exists, insert, select, update
+from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session
 
 from app.infrastucture.models.user import UserModel
@@ -20,7 +20,7 @@ class UserRepository:
             )
         )
 
-        return session.scalar(query)
+        return session.scalar(query) or False
 
     async def get_user(self, session: Session, username: str) -> UserModel:
         query = select(self._model).where(self._model.username == username)
@@ -42,6 +42,7 @@ class UserRepository:
         try:
             created_user = session.scalar(query)
         except Exception as e:
+            print(e)
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"user with username = {user_data.username} already exist",
@@ -63,3 +64,18 @@ class UserRepository:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
         return user
+
+    async def delete_user(self, session: Session, username: str) -> None:
+        query = (
+            delete(self._model)
+            .where(self._model.username == username)
+            .returning(self._model)
+        )
+
+        try:
+            was_user_exist: bool = session.scalar(query) is not None
+        except Exception:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+
+        if not was_user_exist:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)

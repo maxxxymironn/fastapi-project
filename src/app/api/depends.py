@@ -17,6 +17,7 @@ from app.domain.post.use_cases.edit_post import EditPostUseCase
 from app.domain.post.use_cases.get_post_by_title import GetPostByTitleUseCase
 from app.domain.post.use_cases.get_post_list import GetPostListUseCase
 from app.domain.user.use_cases.create_user import CreateUserUseCase
+from app.domain.user.use_cases.delete_user import DeleteUserUseCase
 from app.domain.user.use_cases.edit_user import EditUserUseCase
 from app.domain.user.use_cases.get_user import GetUserByUsernameUseCase
 
@@ -31,6 +32,10 @@ def get_case_get_user_by_username() -> GetUserByUsernameUseCase:
 
 def get_case_edit_user() -> EditUserUseCase:
     return EditUserUseCase()
+
+
+def get_delete_user_case() -> DeleteUserUseCase:
+    return DeleteUserUseCase()
 
 
 def get_case_create_post() -> CreatePostUseCase:
