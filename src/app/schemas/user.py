@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field, SecretStr
 
+from app.schemas.post import ResponsePostSchema
+
 
 class BaseUserSchema(BaseModel):
     email: str | None = Field(default=None, max_length=128)
@@ -23,5 +25,6 @@ class ResponseUserSchema(BaseUserSchema):
     password: SecretStr = Field(max_length=128)
     username: str = Field(max_length=128)
     created_at: datetime
+    posts: list[ResponsePostSchema] | None
 
     model_config = ConfigDict(from_attributes=True)

@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import DateTime, ForeignKey, String, Text, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infrastucture.database import Base
 
@@ -32,3 +32,7 @@ class PostModel(Base):
         DateTime(timezone=True), server_default=func.now()
     )
     is_published: Mapped[bool] = mapped_column(default=True)
+
+    author: Mapped["UserModel"] = relationship(
+        back_populates="posts"
+    )

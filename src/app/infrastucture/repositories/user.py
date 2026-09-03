@@ -1,8 +1,9 @@
 from fastapi import HTTPException, status
-from sqlalchemy import insert, select, update
+from sqlalchemy import exists, insert, select, update
 from sqlalchemy.orm import Session
 
 from app.infrastucture.models.user import UserModel
+from app.schemas.post import ResponsePostSchema
 from app.schemas.user import CreateUserSchema, EditUserSchema
 
 
@@ -10,12 +11,25 @@ class UserRepository:
     def __init__(self):
         self._model = UserModel
 
+    async def is_user_exist(self, session: Session, username: str) -> bool:
+        query = (
+            select(
+                select(self._model)
+                .where(self._model.username == username)
+                .exists()
+            )
+        )
+
+        return session.scalar(query)
+
     async def get_user(self, session: Session, username: str) -> UserModel:
         query = select(self._model).where(self._model.username == username)
 
         user: UserModel | None = session.scalar(query)
         if not user:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+        print([ResponsePostSchema.model_validate(post) for post in user.posts])
         return user
 
     async def create_user(

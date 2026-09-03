@@ -3,6 +3,7 @@ from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session
 
 from app.infrastucture.models.post import PostModel
+from app.infrastucture.models.user import UserModel
 from app.schemas.post import CreatePostSchema, EditPostSchema
 
 

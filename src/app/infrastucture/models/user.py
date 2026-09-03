@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import DateTime, String, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infrastucture.database import Base
 
@@ -16,3 +16,8 @@ class UserModel(Base):
     first_name: Mapped[str | None] = mapped_column(String(128))
     last_name: Mapped[str | None] = mapped_column(String(128))
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    posts: Mapped[list["PostModel"]] = relationship(
+        back_populates="author",
+        cascade="all, delete-orphan"
+    )

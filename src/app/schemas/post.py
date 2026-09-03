@@ -22,9 +22,26 @@ class CreatePostSchema(BasePostSchema):
     location_name: str | None = None
 
 
-class ResponsePostSchema(CreatePostSchema):
+class ResponseAuthorSchema(BaseModel):
+    id: int
+    username: str
+    email: str | None
+    first_name: str | None
+    last_name: str | None
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ResponsePostSchemaWithourAuthor(CreatePostSchema):
     id: int
     created_at: datetime
     updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ResponsePostSchema(ResponsePostSchemaWithourAuthor):
+    author: ResponseAuthorSchema
 
     model_config = ConfigDict(from_attributes=True)
