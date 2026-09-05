@@ -7,6 +7,12 @@ from app.api.user.depends import (
     get_get_user_by_username_case,
     get_get_user_list_case,
 )
+from app.core.exceptions.domain import (
+    GetUserListException,
+    UserIsNotUniqueException,
+    UserNotDeletedException,
+    UserNotFoundByUsernameException,
+)
 from app.domain.user.create_user import CreateUserUseCase
 from app.domain.user.delete_user import DeleteUserUseCase
 from app.domain.user.edit_user import EditUserUseCase
@@ -28,23 +34,22 @@ async def get_user_by_username(
 ) -> ResponseUserSchema:
     try:
         return await use_case.execute(username)
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    except UserNotFoundByUsernameException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=exc.get_detail()
+        )
 
 
 @router.get(
-    "/users",
-    status_code=status.HTTP_200_OK,
-    response_model=list[ResponseUserSchema]
+    "/users", status_code=status.HTTP_200_OK, response_model=list[ResponseUserSchema]
 )
 async def get_user_list(
-    use_case: GetUserListUseCase = Depends(get_get_user_list_case)
+    use_case: GetUserListUseCase = Depends(get_get_user_list_case),
 ) -> list[ResponseUserSchema]:
     try:
         return await use_case.execute()
-    except Exception as e:
-        print(e)
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+    except GetUserListException as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=exc)
 
 
 @router.post(
@@ -56,8 +61,10 @@ async def create_user(
 ) -> ResponseUserSchema:
     try:
         return await use_case.execute(user_data)
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+    except UserIsNotUniqueException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=exc.get_detail()
+        )
 
 
 @router.patch(
@@ -68,23 +75,31 @@ async def create_user(
 async def edit_profile(
     username: str,
     user_data: EditUserSchema,
-    use_case: EditUserUseCase = Depends(get_edit_user_case)
+    use_case: EditUserUseCase = Depends(get_edit_user_case),
 ) -> ResponseUserSchema:
     try:
         return await use_case.execute(username, user_data)
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    except UserNotFoundByUsernameException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=exc.get_detail()
+        )
+    except UserIsNotUniqueException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=exc.get_detail()
+        )
 
 
-@router.delete(
-    "/profiles/{username}",
-    status_code=status.HTTP_204_NO_CONTENT
-)
+@router.delete("/profiles/{username}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(
-    username: str,
-    use_case: DeleteUserUseCase = Depends(get_delete_user_case)
+    username: str, use_case: DeleteUserUseCase = Depends(get_delete_user_case)
 ) -> None:
     try:
         return await use_case.execute(username)
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    except UserNotFoundByUsernameException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=exc.get_detail()
+        )
+    except UserNotDeletedException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=exc.get_detail()
+        )

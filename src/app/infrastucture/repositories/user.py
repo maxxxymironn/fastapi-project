@@ -1,8 +1,14 @@
-from fastapi import HTTPException, status
 from sqlalchemy import delete, insert, select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.core.exceptions.database import (
+    DeleteEntityException,
+    EntityAlreadyExistsException,
+    EntityListException,
+    EntityNotFoundException,
+)
 from app.infrastucture.models.user import UserModel
 from app.schemas.user import CreateUserSchema, EditUserSchema
 
@@ -20,7 +26,7 @@ class UserRepository:
 
         user: UserModel | None = await session.scalar(query)
         if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+            raise EntityNotFoundException()
 
         return user
 
@@ -29,7 +35,13 @@ class UserRepository:
             select(self._model)
             .options(selectinload(self._model.posts))
         )
-        return (await session.scalars(query)).all()
+
+        try:
+            post_list = (await session.scalars(query)).all()
+        except IntegrityError:
+            raise EntityListException
+
+        return post_list
 
     async def create_user(
         self, session: AsyncSession, user_data: CreateUserSchema
@@ -43,12 +55,8 @@ class UserRepository:
 
         try:
             user: UserModel = await session.scalar(query)
-        except Exception as e:
-            print(e)
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=f"user with username = {user_data.username} already exist",
-            )
+        except IntegrityError:
+            raise EntityAlreadyExistsException()
 
         return user
 
@@ -63,9 +71,12 @@ class UserRepository:
             .options(selectinload(self._model.posts))
         )
 
-        user = await session.scalar(query)
+        try:
+            user: UserModel | None = await session.scalar(query)
+        except IntegrityError:
+            raise EntityAlreadyExistsException()
         if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+            raise EntityNotFoundException()
 
         return user
 
@@ -77,9 +88,9 @@ class UserRepository:
         )
 
         try:
-            was_user_exist: bool = await session.scalar(query) is not None
-        except Exception:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+            is_deleted: bool = await session.scalar(query) is not None
+        except IntegrityError:
+            raise DeleteEntityException()
 
-        if not was_user_exist:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        if not is_deleted:
+            raise EntityNotFoundException()
