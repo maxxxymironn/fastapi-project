@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.api.depends import (
-    get_case_create_comment,
-    get_case_delete_comment,
-    get_case_edit_comment,
-    get_case_get_comment_list,
+from app.api.comment.depends import (
+    get_create_comment_case,
+    get_delete_comment_case,
+    get_edit_comment_case,
+    get_get_comment_list_case,
 )
 from app.domain.comment.create_comment import CreateCommentUseCase
 from app.domain.comment.delete_comment import DeleteCommentUseCase
@@ -25,7 +25,7 @@ router = APIRouter()
     response_model=list[ResponseCommentSchema],
 )
 async def get_comment_list(
-    post_id: int, use_case: GetCommentListUseCase = Depends(get_case_get_comment_list)
+    post_id: int, use_case: GetCommentListUseCase = Depends(get_get_comment_list_case)
 ) -> list[ResponseCommentSchema]:
     try:
         return await use_case.execute(post_id)
@@ -41,7 +41,7 @@ async def get_comment_list(
 async def create_comment(
     post_id: int,
     comment_data: CreateCommentSchema,
-    use_case: CreateCommentUseCase = Depends(get_case_create_comment),
+    use_case: CreateCommentUseCase = Depends(get_create_comment_case),
 ) -> ResponseCommentSchema:
     try:
         return await use_case.execute(post_id, comment_data)
@@ -59,7 +59,7 @@ async def edit_comment(
     user_id: int,
     comment_id: int,
     comment_data: EditCommentSchema,
-    use_case: EditCommentUseCase = Depends(get_case_edit_comment),
+    use_case: EditCommentUseCase = Depends(get_edit_comment_case),
 ) -> ResponseCommentSchema:
     try:
         return await use_case.execute(post_id, user_id, comment_id, comment_data)
@@ -72,7 +72,7 @@ async def delete_comment(
     post_id: int,
     user_id: int,
     comment_id: int,
-    use_case: DeleteCommentUseCase = Depends(get_case_delete_comment),
+    use_case: DeleteCommentUseCase = Depends(get_delete_comment_case),
 ) -> None:
     try:
         await use_case.execute(post_id, user_id, comment_id)

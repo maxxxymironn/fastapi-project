@@ -1,6 +1,6 @@
 from fastapi import HTTPException, status
 from sqlalchemy import delete, insert, select, update
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio.session import AsyncSession
 
 from app.infrastucture.models.category import CategoryModel
 from app.schemas.category import CreateCategorySchema, EditCategorySchema
@@ -10,21 +10,21 @@ class CategoryRepository:
     def __init__(self):
         self._model = CategoryModel
 
-    async def get(self, session: Session, category_slug: str) -> CategoryModel:
+    async def get(self, session: AsyncSession, category_slug: str) -> CategoryModel:
         query = select(self._model).where(self._model.slug == category_slug)
 
-        category: CategoryModel | None = session.scalar(query)
+        category: CategoryModel | None = await session.scalar(query)
 
         if not category:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
         return category
 
-    async def get_list(self, session: Session):
+    async def get_list(self, session: AsyncSession):
         query = select(self._model)
-        return session.scalars(query).all()
+        return (await session.scalars(query)).all()
 
     async def create(
-        self, session: Session, category_data: CreateCategorySchema
+        self, session: AsyncSession, category_data: CreateCategorySchema
     ) -> CategoryModel:
         query = (
             insert(self._model)
@@ -33,7 +33,7 @@ class CategoryRepository:
         )
 
         try:
-            category: CategoryModel | None = session.scalar(query)
+            category: CategoryModel | None = await session.scalar(query)
         except Exception as e:
             print(e)
             raise HTTPException(status_code=status.HTTP_409_CONFLICT)
@@ -41,7 +41,9 @@ class CategoryRepository:
         return category
 
     async def edit(
-        self, session: Session, category_slug: str, category_data: EditCategorySchema
+        self, session: AsyncSession,
+        category_slug: str,
+        category_data: EditCategorySchema
     ) -> CategoryModel:
         query = (
             update(self._model)
@@ -51,13 +53,13 @@ class CategoryRepository:
         )
 
         try:
-            category = session.scalar(query)
+            category: CategoryModel | None = await session.scalar(query)
         except Exception:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
         return category
 
-    async def delete(self, session: Session, category_slug: str) -> None:
+    async def delete(self, session: AsyncSession, category_slug: str) -> None:
         query = (
             delete(self._model)
             .where(self._model.slug == category_slug)
@@ -65,7 +67,7 @@ class CategoryRepository:
         )
 
         try:
-            is_deleted = session.scalar(query) is not None
+            is_deleted: bool = await session.scalar(query) is not None
         except Exception:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 

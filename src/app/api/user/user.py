@@ -1,15 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.api.depends import (
-    get_case_create_user,
-    get_case_edit_user,
-    get_case_get_user_by_username,
+from app.api.user.depends import (
+    get_create_user_case,
     get_delete_user_case,
+    get_edit_user_case,
+    get_get_user_by_username_case,
+    get_get_user_list_case,
 )
-from app.domain.user.use_cases.create_user import CreateUserUseCase
-from app.domain.user.use_cases.delete_user import DeleteUserUseCase
-from app.domain.user.use_cases.edit_user import EditUserUseCase
-from app.domain.user.use_cases.get_user import GetUserByUsernameUseCase
+from app.domain.user.create_user import CreateUserUseCase
+from app.domain.user.delete_user import DeleteUserUseCase
+from app.domain.user.edit_user import EditUserUseCase
+from app.domain.user.get_user import GetUserByUsernameUseCase
+from app.domain.user.get_user_list import GetUserListUseCase
 from app.schemas.user import CreateUserSchema, EditUserSchema, ResponseUserSchema
 
 router = APIRouter()
@@ -22,12 +24,27 @@ router = APIRouter()
 )
 async def get_user_by_username(
     username: str,
-    use_case: GetUserByUsernameUseCase = Depends(get_case_get_user_by_username),
+    use_case: GetUserByUsernameUseCase = Depends(get_get_user_by_username_case),
 ) -> ResponseUserSchema:
     try:
         return await use_case.execute(username)
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+
+@router.get(
+    "/users",
+    status_code=status.HTTP_200_OK,
+    response_model=list[ResponseUserSchema]
+)
+async def get_user_list(
+    use_case: GetUserListUseCase = Depends(get_get_user_list_case)
+) -> list[ResponseUserSchema]:
+    try:
+        return await use_case.execute()
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
 
 @router.post(
@@ -35,12 +52,11 @@ async def get_user_by_username(
 )
 async def create_user(
     user_data: CreateUserSchema,
-    use_case: CreateUserUseCase = Depends(get_case_create_user),
+    use_case: CreateUserUseCase = Depends(get_create_user_case),
 ) -> ResponseUserSchema:
     try:
         return await use_case.execute(user_data)
-    except Exception as e:
-        print(e)
+    except Exception:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
 
@@ -52,7 +68,7 @@ async def create_user(
 async def edit_profile(
     username: str,
     user_data: EditUserSchema,
-    use_case: EditUserUseCase = Depends(get_case_edit_user)
+    use_case: EditUserUseCase = Depends(get_edit_user_case)
 ) -> ResponseUserSchema:
     try:
         return await use_case.execute(username, user_data)

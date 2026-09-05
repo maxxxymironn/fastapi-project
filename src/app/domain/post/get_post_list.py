@@ -1,4 +1,4 @@
-from app.infrastucture.database import db
+from app.infrastucture.postgresql.database import db
 from app.infrastucture.repositories.post import PostRepository
 from app.schemas.post import ResponsePostSchema
 
@@ -9,7 +9,7 @@ class GetPostListUseCase:
         self._repo = PostRepository()
 
     async def execute(self, category_slug: str):
-        with self._db.session() as session:
+        async with self._db.session() as session:
             if not category_slug:
                 post_list = await self._repo.get_post_list(session)
             else:

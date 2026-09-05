@@ -1,6 +1,6 @@
 from fastapi import HTTPException, status
 from sqlalchemy import delete, insert, select, update
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.infrastucture.models.comment import CommentModel
 from app.schemas.comment import CreateCommentSchema, EditCommentSchema
@@ -10,13 +10,13 @@ class CommentRepository:
     def __init__(self):
         self._model = CommentModel
 
-    async def get_comment_list(self, session: Session, post_id: int):
+    async def get_comment_list(self, session: AsyncSession, post_id: int):
         query = select(self._model).where(self._model.post_id == post_id)
 
-        return session.scalars(query).all()
+        return (await session.scalars(query)).all()
 
     async def create_comment(
-        self, session: Session, post_id: int, comment_data: CreateCommentSchema
+        self, session: AsyncSession, post_id: int, comment_data: CreateCommentSchema
     ) -> CommentModel:
         query = (
             insert(self._model)
@@ -25,15 +25,15 @@ class CommentRepository:
         )
 
         try:
-            comment = session.scalar(query)
-        except Exception as e:
+            comment: CommentModel | None = await session.scalar(query)
+        except Exception:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
         return comment
 
     async def edit_comment(
         self,
-        session: Session,
+        session: AsyncSession,
         post_id: int,
         user_id: int,
         comment_id: int,
@@ -51,8 +51,8 @@ class CommentRepository:
         )
 
         try:
-            comment = session.scalar(query)
-        except Exception as e:
+            comment: CommentModel | None = await session.scalar(query)
+        except Exception:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
         if not comment:
@@ -72,8 +72,8 @@ class CommentRepository:
         )
 
         try:
-            is_deleted = session.scalar(query) is not None
-        except Exception as e:
+            is_deleted: bool = await session.scalar(query) is not None
+        except Exception:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
         if not is_deleted:

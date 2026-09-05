@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.api.depends import (
+from app.api.location.depends import (
     get_create_location_case,
     get_delete_location_case,
     get_get_location_case,

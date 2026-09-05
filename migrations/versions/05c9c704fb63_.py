@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 95fc9d567092
+Revision ID: 05c9c704fb63
 Revises: 
-Create Date: 2026-09-02 19:54:56.359838
+Create Date: 2026-09-04 23:40:46.938437
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '95fc9d567092'
+revision: str = '05c9c704fb63'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -26,7 +26,7 @@ def upgrade() -> None:
     sa.Column('title', sa.String(length=256), nullable=False),
     sa.Column('slug', sa.String(), nullable=False),
     sa.Column('description', sa.Text(), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('is_published', sa.Boolean(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('slug')
@@ -34,7 +34,7 @@ def upgrade() -> None:
     op.create_table('locations',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=256), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('is_published', sa.Boolean(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('name')
@@ -46,7 +46,7 @@ def upgrade() -> None:
     sa.Column('email', sa.String(length=128), nullable=True),
     sa.Column('first_name', sa.String(length=128), nullable=True),
     sa.Column('last_name', sa.String(length=128), nullable=True),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email'),
     sa.UniqueConstraint('username')
@@ -59,9 +59,9 @@ def upgrade() -> None:
     sa.Column('location_name', sa.String(length=256), nullable=True),
     sa.Column('title', sa.String(length=256), nullable=False),
     sa.Column('text', sa.Text(), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
-    sa.Column('publicated_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('publicated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('is_published', sa.Boolean(), nullable=False),
     sa.ForeignKeyConstraint(['author_username'], ['users.username'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['category_slug'], ['categories.slug'], ondelete='SET NULL'),
@@ -74,7 +74,7 @@ def upgrade() -> None:
     sa.Column('image_url', sa.Text(), nullable=True),
     sa.Column('author_id', sa.Integer(), nullable=False),
     sa.Column('post_id', sa.Integer(), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['author_id'], ['users.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['post_id'], ['posts.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')

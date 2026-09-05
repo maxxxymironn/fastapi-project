@@ -1,10 +1,9 @@
 from datetime import datetime
 
-from slugify import slugify
-from sqlalchemy import DateTime, String, Text, event, func
+from sqlalchemy import DateTime, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.infrastucture.database import Base
+from app.infrastucture.postgresql.database import Base
 
 
 class CategoryModel(Base):

@@ -1,9 +1,9 @@
 from fastapi import HTTPException, status
 from sqlalchemy import delete, insert, select, update
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.infrastucture.models.user import UserModel
-from app.schemas.post import ResponsePostSchema
 from app.schemas.user import CreateUserSchema, EditUserSchema
 
 
@@ -11,61 +11,65 @@ class UserRepository:
     def __init__(self):
         self._model = UserModel
 
-    async def is_user_exist(self, session: Session, username: str) -> bool:
+    async def get_user(self, session: AsyncSession, username: str) -> UserModel:
         query = (
-            select(
-                select(self._model)
-                .where(self._model.username == username)
-                .exists()
-            )
+            select(self._model)
+            .options(selectinload(self._model.posts))
+            .where(self._model.username == username)
         )
 
-        return session.scalar(query) or False
-
-    async def get_user(self, session: Session, username: str) -> UserModel:
-        query = select(self._model).where(self._model.username == username)
-
-        user: UserModel | None = session.scalar(query)
+        user: UserModel | None = await session.scalar(query)
         if not user:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
-        print([ResponsePostSchema.model_validate(post) for post in user.posts])
         return user
 
+    async def get_user_list(self, session: AsyncSession):
+        query = (
+            select(self._model)
+            .options(selectinload(self._model.posts))
+        )
+        return (await session.scalars(query)).all()
+
     async def create_user(
-        self, session: Session, user_data: CreateUserSchema
+        self, session: AsyncSession, user_data: CreateUserSchema
     ) -> UserModel:
         query = (
-            insert(self._model).values(user_data.model_dump()).returning(self._model)
+            insert(self._model)
+            .values(user_data.model_dump())
+            .returning(self._model)
+            .options(selectinload(self._model.posts))
         )
 
         try:
-            created_user = session.scalar(query)
+            user: UserModel = await session.scalar(query)
         except Exception as e:
             print(e)
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"user with username = {user_data.username} already exist",
             )
-        return created_user
+
+        return user
 
     async def update_user_attributes(
-        self, session: Session, username: str, user_data: EditUserSchema
+        self, session: AsyncSession, username: str, user_data: EditUserSchema
     ) -> UserModel:
         query = (
             update(self._model)
             .where(self._model.username == username)
             .values(user_data.model_dump(exclude_none=True, exclude_unset=True))
             .returning(self._model)
+            .options(selectinload(self._model.posts))
         )
 
-        user = session.scalar(query)
+        user = await session.scalar(query)
         if not user:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
         return user
 
-    async def delete_user(self, session: Session, username: str) -> None:
+    async def delete_user(self, session: AsyncSession, username: str) -> None:
         query = (
             delete(self._model)
             .where(self._model.username == username)
@@ -73,7 +77,7 @@ class UserRepository:
         )
 
         try:
-            was_user_exist: bool = session.scalar(query) is not None
+            was_user_exist: bool = await session.scalar(query) is not None
         except Exception:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 

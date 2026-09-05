@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.api.depends import (
+from app.api.category.depends import (
     get_create_category_case,
     get_delete_category_case,
     get_edit_category_case,

@@ -1,6 +1,6 @@
 from slugify import slugify
 
-from app.infrastucture.database import db
+from app.infrastucture.postgresql.database import db
 from app.infrastucture.repositories.category import CategoryRepository
 from app.schemas.category import CreateCategorySchema, ResponseCategorySchema
 
@@ -18,7 +18,7 @@ class CreateCategoryUseCase:
                 category_data.title, lowercase=True, max_length=256
             )
 
-        with self._db.session() as session:
+        async with self._db.session() as session:
             category = await self._repo.create(session, category_data)
 
         return ResponseCategorySchema.model_validate(category)

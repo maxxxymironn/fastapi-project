@@ -1,4 +1,4 @@
-from app.infrastucture.database import db
+from app.infrastucture.postgresql.database import db
 from app.infrastucture.repositories.location import LocationRepository
 
 
@@ -8,5 +8,5 @@ class DeleteLocationUseCase:
         self._repo = LocationRepository()
 
     async def execute(self, location_name: str) -> None:
-        with self._db.session() as session:
+        async with self._db.session() as session:
             await self._repo.delete(session, location_name)
