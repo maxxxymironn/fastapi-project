@@ -1,8 +1,14 @@
-from sqlalchemy.orm import selectinload
-from fastapi import HTTPException, status
 from sqlalchemy import delete, insert, select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
+from app.core.exceptions.database_exception import (
+    EntityListException,
+    EntityNotCreatedException,
+    EntityNotDeletedException,
+    EntityNotFoundException,
+)
 from app.infrastucture.models.post import PostModel
 from app.schemas.post import CreatePostSchema, EditPostSchema
 
@@ -21,7 +27,7 @@ class PostRepository:
         post: PostModel | None = await session.scalar(query)
 
         if not post:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+            raise EntityNotFoundException()
 
         return post
 
@@ -30,7 +36,11 @@ class PostRepository:
             select(self._model)
             .options(selectinload(self._model.author))
         )
-        return (await session.scalars(query)).all()
+
+        try:
+            return (await session.scalars(query)).all()
+        except IntegrityError:
+            raise EntityListException()
 
     async def get_post_list_by_category(
         self, session: AsyncSession, category_slug: str
@@ -40,23 +50,30 @@ class PostRepository:
             .where(self._model.category_slug == category_slug)
             .options(selectinload(self._model.author))
         )
-        return (await session.scalars(query)).all()
+
+        try:
+            return (await session.scalars(query)).all()
+        except IntegrityError:
+            raise EntityListException()
 
     async def create_post(
-        self, session: AsyncSession, post_data: CreatePostSchema
+        self, session: AsyncSession, author_username: str, post_data: CreatePostSchema
     ) -> PostModel:
+        values_dict = post_data.model_dump(exclude_none=True, exclude_unset=True)
+        values_dict.update({"author_username": author_username})
+        print(values_dict)
+
         query = (
             insert(self._model)
-            .values(post_data.model_dump(exclude_none=True, exclude_unset=True))
+            .values(values_dict)
             .returning(self._model)
             .options(selectinload(self._model.author))
         )
 
         try:
-            post: PostModel | None = await session.scalar(query)
-        except Exception as e:
-            print(e)
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT)
+            post: PostModel = await session.scalar(query)
+        except IntegrityError:
+            raise EntityNotCreatedException()
 
         return post
 
@@ -73,8 +90,11 @@ class PostRepository:
 
         try:
             post: PostModel | None = await session.scalar(query)
-        except Exception:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT)
+        except IntegrityError:
+            raise EntityNotCreatedException()
+
+        if not post:
+            raise EntityNotFoundException()
 
         return post
 
@@ -87,8 +107,8 @@ class PostRepository:
 
         try:
             is_deleted: bool = await session.scalar(query) is not None
-        except Exception:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+        except IntegrityError:
+            raise EntityNotDeletedException()
 
         if not is_deleted:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+            raise EntityNotFoundException()

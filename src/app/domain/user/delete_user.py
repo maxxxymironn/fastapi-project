@@ -1,5 +1,8 @@
-from app.core.exceptions.database import DeleteEntityException, EntityNotFoundException
-from app.core.exceptions.domain import (
+from app.core.exceptions.database_exception import (
+    EntityNotDeletedException,
+    EntityNotFoundException,
+)
+from app.core.exceptions.user_domain import (
     UserNotDeletedException,
     UserNotFoundByUsernameException,
 )
@@ -18,5 +21,5 @@ class DeleteUserUseCase:
                 await self._repo.delete_user(session, username)
         except EntityNotFoundException:
             raise UserNotFoundByUsernameException(username)
-        except DeleteEntityException:
+        except EntityNotDeletedException:
             raise UserNotDeletedException(username)

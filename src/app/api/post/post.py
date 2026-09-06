@@ -1,3 +1,4 @@
+from app.core.exceptions.user_domain import UserNotFoundByUsernameException
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.api.post.depends import (
@@ -7,10 +8,16 @@ from app.api.post.depends import (
     get_get_post_by_title_case,
     get_get_post_list_case,
 )
+from app.core.exceptions.post_domain import (
+    GetPostListException,
+    PostNotCreatedException,
+    PostNotDeletedException,
+    PostNotFoundByIdException,
+)
 from app.domain.post.create_post import CreatePostUseCase
 from app.domain.post.delete_post import DeletePostUseCase
 from app.domain.post.edit_post import EditPostUseCase
-from app.domain.post.get_post_by_title import GetPostByTitleUseCase
+from app.domain.post.get_post import GetPostByTitleUseCase
 from app.domain.post.get_post_list import GetPostListUseCase
 from app.schemas.post import CreatePostSchema, EditPostSchema, ResponsePostSchema
 
@@ -26,9 +33,10 @@ async def get_post_list(
 ):
     try:
         return await use_case.execute(category_slug)
-    except Exception as e:
-        print(e)
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+    except GetPostListException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=exc.get_detail()
+        )
 
 
 @router.get(
@@ -39,22 +47,30 @@ async def get_post_by_id(
 ) -> ResponsePostSchema:
     try:
         return await use_case.execute(id)
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+    except PostNotFoundByIdException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=exc.get_detail()
+        )
 
 
 @router.post(
     "/posts", status_code=status.HTTP_201_CREATED, response_model=ResponsePostSchema
 )
 async def create_post(
+    author_username: str,
     post_data: CreatePostSchema,
     use_case: CreatePostUseCase = Depends(get_create_post_case),
 ) -> ResponsePostSchema:
     try:
-        return await use_case.execute(post_data)
-    except Exception as e:
-        print(e)
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+        return await use_case.execute(author_username, post_data)
+    except PostNotCreatedException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=exc.get_detail()
+        )
+    except UserNotFoundByUsernameException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=exc.get_detail()
+        )
 
 
 @router.patch(
@@ -67,8 +83,14 @@ async def edit_post(
 ) -> ResponsePostSchema:
     try:
         return await use_case.execute(id, post_data)
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+    except PostNotCreatedException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=exc.get_detail()
+        )
+    except PostNotFoundByIdException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=exc.get_detail()
+        )
 
 
 @router.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -77,5 +99,11 @@ async def delete_post(
 ) -> None:
     try:
         await use_case.execute(id)
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+    except PostNotDeletedException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=exc.get_detail()
+        )
+    except PostNotFoundByIdException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=exc.get_detail()
+        )

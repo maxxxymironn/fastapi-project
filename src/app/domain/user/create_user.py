@@ -1,5 +1,5 @@
-from app.core.exceptions.database import EntityAlreadyExistsException
-from app.core.exceptions.domain import UserIsNotUniqueException
+from app.core.exceptions.database_exception import EntityAlreadyExistsException
+from app.core.exceptions.user_domain import UserIsNotUniqueException
 from app.infrastucture.postgresql.database import db
 from app.infrastucture.repositories.user import UserRepository
 from app.schemas.user import CreateUserSchema, ResponseUserSchema

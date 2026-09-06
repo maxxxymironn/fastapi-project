@@ -1,7 +1,7 @@
 from app.domain.post.create_post import CreatePostUseCase
 from app.domain.post.delete_post import DeletePostUseCase
 from app.domain.post.edit_post import EditPostUseCase
-from app.domain.post.get_post_by_title import GetPostByTitleUseCase
+from app.domain.post.get_post import GetPostByTitleUseCase
 from app.domain.post.get_post_list import GetPostListUseCase
 
 

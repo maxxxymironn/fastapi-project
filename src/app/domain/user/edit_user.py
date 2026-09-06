@@ -1,8 +1,8 @@
-from app.core.exceptions.database import (
+from app.core.exceptions.database_exception import (
     EntityAlreadyExistsException,
     EntityNotFoundException,
 )
-from app.core.exceptions.domain import (
+from app.core.exceptions.user_domain import (
     UserIsNotUniqueException,
     UserNotFoundByUsernameException,
 )

@@ -7,7 +7,7 @@ from app.api.user.depends import (
     get_get_user_by_username_case,
     get_get_user_list_case,
 )
-from app.core.exceptions.domain import (
+from app.core.exceptions.user_domain import (
     GetUserListException,
     UserIsNotUniqueException,
     UserNotDeletedException,

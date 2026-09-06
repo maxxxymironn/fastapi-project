@@ -11,12 +11,13 @@ class BasePostSchema(BaseModel):
 class EditPostSchema(BasePostSchema):
     title: str | None = Field(default=None, max_length=256)
     text: str | None = None
+    category_slug: str | None = None
+    location_name: str | None = None
 
 
 class CreatePostSchema(BasePostSchema):
-    title: str = Field(max_length=128)
-    text: str
-    author_username: str
+    title: str = Field(min_length=5, max_length=128, examples=["title"])
+    text: str = Field(examples=["some text"])
     publicated_at: datetime | None = None
     category_slug: str
     location_name: str | None = None

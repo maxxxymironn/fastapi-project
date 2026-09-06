@@ -3,10 +3,10 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.core.exceptions.database import (
-    DeleteEntityException,
+from app.core.exceptions.database_exception import (
     EntityAlreadyExistsException,
     EntityListException,
+    EntityNotDeletedException,
     EntityNotFoundException,
 )
 from app.infrastucture.models.user import UserModel
@@ -37,11 +37,9 @@ class UserRepository:
         )
 
         try:
-            post_list = (await session.scalars(query)).all()
+            return (await session.scalars(query)).all()
         except IntegrityError:
             raise EntityListException
-
-        return post_list
 
     async def create_user(
         self, session: AsyncSession, user_data: CreateUserSchema
@@ -75,6 +73,7 @@ class UserRepository:
             user: UserModel | None = await session.scalar(query)
         except IntegrityError:
             raise EntityAlreadyExistsException()
+
         if not user:
             raise EntityNotFoundException()
 
@@ -90,7 +89,7 @@ class UserRepository:
         try:
             is_deleted: bool = await session.scalar(query) is not None
         except IntegrityError:
-            raise DeleteEntityException()
+            raise EntityNotDeletedException()
 
         if not is_deleted:
             raise EntityNotFoundException()

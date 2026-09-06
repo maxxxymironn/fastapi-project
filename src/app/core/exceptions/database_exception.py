@@ -15,5 +15,9 @@ class EntityAlreadyExistsException(BaseDatabaseException):
     pass
 
 
-class DeleteEntityException(BaseDatabaseException):
+class EntityNotDeletedException(BaseDatabaseException):
+    pass
+
+
+class EntityNotCreatedException(BaseDatabaseException):
     pass
