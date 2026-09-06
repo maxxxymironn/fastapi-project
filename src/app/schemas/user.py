@@ -1,29 +1,16 @@
 from datetime import datetime
 
-from fastapi import HTTPException, status
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
 
+from app.core.constants import EMAIL_REGEX
 from app.schemas.post import ResponsePostSchemaWithourAuthor
-
-
-ALLOW_USERNAME_SYMBOLS = "qwertyuiopasdfghjklzxcvbnm0123456789_-"
-EMAIL_REGEX = r"^[\w\.-]+@[\w\.-]+\.\w+$"
-
-
-def check_username(username: str) -> None:
-    string = username.lower()
-    for char in string:
-        if ALLOW_USERNAME_SYMBOLS.find(char) == -1:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-                detail="username can only contains: a-z, 0-9, _, -",
-            )
+from app.services.check_username_validate import check_username
 
 
 class BaseUserSchema(BaseModel):
     email: str | None = Field(
         default=None,
-        max_length=128, 
+        max_length=128,
         pattern=EMAIL_REGEX,
         examples=["email@google.com | null"]
     )
@@ -42,6 +29,7 @@ class BaseUserSchema(BaseModel):
 class EditUserSchema(BaseUserSchema):
     username: str | None = Field(
         default=None,
+        min_length=5,
         max_length=128,
         examples=["username | null"]
     )
@@ -57,8 +45,8 @@ class EditUserSchema(BaseUserSchema):
 
 
 class CreateUserSchema(BaseUserSchema):
-    username: str = Field(max_length=128, examples=["username"])
-    password: str = Field(max_length=128, examples=["password"])
+    username: str = Field(min_length=5, max_length=128, examples=["username"])
+    password: str = Field(min_length=8, max_length=128, examples=["password"])
 
     @field_validator("username", mode="after")
     @staticmethod
