@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import DateTime, String, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infrastucture.postgresql.database import Base
 
@@ -15,3 +15,8 @@ class LocationModel(Base):
         DateTime(timezone=True), server_default=func.now()
     )
     is_published: Mapped[bool] = mapped_column(default=True)
+
+    posts: Mapped[list["PostModel"]] = relationship(
+        back_populates="location",
+        passive_deletes=True
+    )

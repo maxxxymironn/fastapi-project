@@ -40,3 +40,6 @@ class PostModel(Base):
     category: Mapped["CategoryModel"] = relationship(
         back_populates="posts"
     )
+    location: Mapped["LocationModel"] = relationship(
+        back_populates="posts"
+    )

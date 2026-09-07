@@ -57,6 +57,38 @@ class PostRepository:
         except IntegrityError:
             raise EntityListException()
 
+    async def get_post_list_by_location(
+        self, session: AsyncSession, location_name: str
+    ):
+        query = (
+            select(self._model)
+            .where(self._model.location_name == location_name, self._model.is_published)
+            .options(selectinload(self._model.author))
+        )
+
+        try:
+            return (await session.scalars(query)).all()
+        except IntegrityError:
+            raise EntityListException()
+
+    async def get_post_list_by_category_and_location(
+        self, session: AsyncSession, category_slug: str, location_name: str
+    ):
+        query = (
+            select(self._model)
+            .where(
+                self._model.location_name == location_name,
+                self._model.category_slug == category_slug,
+                self._model.is_published
+            )
+            .options(selectinload(self._model.author))
+        )
+
+        try:
+            return (await session.scalars(query)).all()
+        except IntegrityError:
+            raise EntityListException()
+
     async def create_post(
         self, session: AsyncSession, author_username: str, post_data: CreatePostSchema
     ) -> PostModel:

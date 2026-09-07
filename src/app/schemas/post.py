@@ -1,3 +1,4 @@
+from pydantic import field_validator
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -12,7 +13,14 @@ class EditPostSchema(BasePostSchema):
     title: str | None = Field(default=None, max_length=256)
     text: str | None = None
     category_slug: str | None = None
-    location_name: str | None = None
+    location_name: str | None = Field(
+        default=None, max_length=256, examples=["string 256 | null"]
+    )
+
+    @field_validator("location_name", mode="after")
+    @staticmethod
+    def validate_location_name(location_name: str) -> str:
+        return location_name.lower()
 
 
 class CreatePostSchema(BasePostSchema):
@@ -20,7 +28,14 @@ class CreatePostSchema(BasePostSchema):
     text: str = Field(examples=["some text"])
     publicated_at: datetime | None = None
     category_slug: str
-    location_name: str | None = None
+    location_name: str | None = Field(
+        default=None, max_length=256, examples=["string 256 | null"]
+    )
+
+    @field_validator("location_name", mode="after")
+    @staticmethod
+    def validate_location_name(location_name: str) -> str:
+        return location_name.lower()
 
 
 class ResponseAuthorSchema(BaseModel):

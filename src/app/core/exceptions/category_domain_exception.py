@@ -25,9 +25,7 @@ class GetCategoryListException(BaseDomainException):
 class CategoryAlreadyExistsException(BaseDomainException):
     _exception_text_template = "Category with slug='{slug}' already exists"
 
-    def __init__(
-        self, category_slug: str
-    ) -> None:
+    def __init__(self, category_slug: str) -> None:
         self._exception_text_template = self._exception_text_template.format(
             slug=category_slug,
         )

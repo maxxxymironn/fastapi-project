@@ -10,14 +10,24 @@ class GetPostListUseCase:
         self._db = db
         self._repo = PostRepository()
 
-    async def execute(self, category_slug: str) -> list[ResponsePostSchema]:
+    async def execute(
+        self, category_slug: str | None, location_name: str | None
+    ) -> list[ResponsePostSchema]:
         try:
             async with self._db.session() as session:
-                if not category_slug:
+                if not category_slug and not location_name:
                     post_list = await self._repo.get_post_list(session)
-                else:
+                elif not category_slug:
+                    post_list = await self._repo.get_post_list_by_location(
+                        session, location_name.lower()  # pyrefly: ignore [bad-argument-type, missing-attribute]
+                    )
+                elif not location_name:
                     post_list = await self._repo.get_post_list_by_category(
-                        session, category_slug
+                        session, category_slug.lower()
+                    )
+                else:
+                    post_list = await self._repo.get_post_list_by_category_and_location(
+                        session, category_slug.lower(), location_name.lower()
                     )
         except EntityListException:
             raise GetPostListException()

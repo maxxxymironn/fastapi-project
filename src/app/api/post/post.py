@@ -1,4 +1,3 @@
-from app.core.exceptions.user_domain_exception import UserNotFoundByUsernameException
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.api.post.depends import (
@@ -14,6 +13,7 @@ from app.core.exceptions.post_domain_exception import (
     PostNotDeletedException,
     PostNotFoundByIdException,
 )
+from app.core.exceptions.user_domain_exception import UserNotFoundByUsernameException
 from app.domain.post.create_post import CreatePostUseCase
 from app.domain.post.delete_post import DeletePostUseCase
 from app.domain.post.edit_post import EditPostUseCase
@@ -29,10 +29,11 @@ router = APIRouter()
 )
 async def get_post_list(
     category_slug: str = Query(default=None),
+    location_name: str = Query(default=None),
     use_case: GetPostListUseCase = Depends(get_get_post_list_case),
 ):
     try:
-        return await use_case.execute(category_slug)
+        return await use_case.execute(category_slug, location_name)
     except GetPostListException as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=exc.get_detail()

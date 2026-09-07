@@ -16,7 +16,9 @@ class EditCategorySchema(BaseModel):
 class CreateCategorySchema(BaseModel):
     title: str = Field(max_length=256, examples=["string 256"])
     description: str
-    slug: str | None = Field(default=None, max_length=256, examples=["string | null"])
+    slug: str | None = Field(
+        default=None, max_length=256, examples=["string | null"], validate_default=True
+    )
     is_published: bool = True
 
     @field_validator("slug", mode="after")
@@ -24,19 +26,15 @@ class CreateCategorySchema(BaseModel):
     def validate_slug(slug: str | None, info: ValidationInfo) -> str:
         if not slug:
             try:
-                slug = slugify(
-                    info.data["title"], lowercase=True, max_length=256
-                )
+                slug = slugify(info.data["title"], lowercase=True, max_length=256)
             except Exception:
                 raise HTTPException(
                     status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-                    detail=f"Slug title='{info.data["title"]}' failed"
+                    detail=f"Slug title='{info.data['title']}' failed",
                 )
 
         validate_attribute("slug", slug)
         return slug
-
-    model_config = ConfigDict(validate_default=True)
 
 
 class ResponseCategorySchema(CreateCategorySchema):

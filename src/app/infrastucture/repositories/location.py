@@ -1,7 +1,13 @@
-from fastapi import HTTPException, status
 from sqlalchemy import delete, insert, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions.database_exception import (
+    EntityAlreadyExistsException,
+    EntityListException,
+    EntityNotDeletedException,
+    EntityNotFoundException,
+)
 from app.infrastucture.models.location import LocationModel
 from app.schemas.location import CreateLocationSchema
 
@@ -11,8 +17,15 @@ class LocationRepository:
         self._model = LocationModel
 
     async def get_list(self, session: AsyncSession):
-        query = select(self._model)
-        return (await session.scalars(query)).all()
+        query = (
+            select(self._model)
+            .where(self._model.is_published)
+        )
+
+        try:
+            return (await session.scalars(query)).all()
+        except IntegrityError:
+            raise EntityListException()
 
     async def get(self, session: AsyncSession, location_name: str) -> LocationModel:
         query = (
@@ -21,9 +34,9 @@ class LocationRepository:
         )
 
         location: LocationModel | None = await session.scalar(query)
-
         if not location:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+            raise EntityNotFoundException()
+
         return location
 
     async def create(
@@ -36,9 +49,9 @@ class LocationRepository:
         )
 
         try:
-            location: LocationModel | None = await session.scalar(query)
-        except Exception:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT)
+            location: LocationModel = await session.scalar(query)
+        except IntegrityError:
+            raise EntityAlreadyExistsException()
 
         return location
 
@@ -51,8 +64,8 @@ class LocationRepository:
 
         try:
             location: LocationModel | None = await session.scalar(query)
-        except Exception:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+        except IntegrityError:
+            raise EntityNotDeletedException()
 
         if not location:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+            raise EntityNotFoundException()
