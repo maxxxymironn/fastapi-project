@@ -2,7 +2,7 @@ from app.core.exceptions.database_exception import (
     EntityNotCreatedException,
     EntityNotFoundException,
 )
-from app.core.exceptions.post_domain import (
+from app.core.exceptions.post_domain_exception import (
     PostNotCreatedException,
     PostNotFoundByIdException,
 )

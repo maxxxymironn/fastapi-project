@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: d1b8d5635002
+Revision ID: 7cd4bc60754c
 Revises: 
-Create Date: 2026-09-05 21:38:40.469295
+Create Date: 2026-09-07 13:58:13.725211
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'd1b8d5635002'
+revision: str = '7cd4bc60754c'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -54,7 +54,7 @@ def upgrade() -> None:
     op.create_table('posts',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('author_username', sa.String(length=128), nullable=False),
-    sa.Column('category_slug', sa.String(), nullable=False),
+    sa.Column('category_slug', sa.String(), server_default='general', nullable=False),
     sa.Column('image_url', sa.String(), nullable=True),
     sa.Column('location_name', sa.String(length=256), nullable=True),
     sa.Column('title', sa.String(length=256), nullable=False),
@@ -64,7 +64,7 @@ def upgrade() -> None:
     sa.Column('publicated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('is_published', sa.Boolean(), nullable=False),
     sa.ForeignKeyConstraint(['author_username'], ['users.username'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['category_slug'], ['categories.slug'], ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['category_slug'], ['categories.slug'], ondelete='SET DEFAULT'),
     sa.ForeignKeyConstraint(['location_name'], ['locations.name'], ondelete='SET NULL'),
     sa.PrimaryKeyConstraint('id')
     )

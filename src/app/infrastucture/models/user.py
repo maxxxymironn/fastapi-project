@@ -19,6 +19,5 @@ class UserModel(Base):
 
     posts: Mapped[list["PostModel"]] = relationship(
         back_populates="author",
-        cascade="all, delete-orphan",
         passive_deletes=True
     )

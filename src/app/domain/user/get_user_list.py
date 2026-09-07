@@ -1,5 +1,5 @@
 from app.core.exceptions.database_exception import EntityListException
-from app.core.exceptions.user_domain import GetUserListException
+from app.core.exceptions.user_domain_exception import GetUserListException
 from app.infrastucture.postgresql.database import db
 from app.infrastucture.repositories.user import UserRepository
 from app.schemas.user import ResponseUserSchema

@@ -7,6 +7,13 @@ from app.api.category.depends import (
     get_get_category_case,
     get_get_category_list_case,
 )
+from app.core.exceptions.category_domain_exception import (
+    CategoryAlreadyExistsException,
+    CategoryNotDeletedException,
+    CategoryNotFoundException,
+    GeneralCategoryCannotBeModifiedException,
+    GetCategoryListException,
+)
 from app.domain.category.create_category import CreateCategoryUseCase
 from app.domain.category.delete_category import DeleteCategoryUseCase
 from app.domain.category.edit_category import EditCategoryUseCase
@@ -31,24 +38,10 @@ async def get_category_list(
 ) -> list[ResponseCategorySchema]:
     try:
         return await use_case.execute()
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
-
-
-@router.post(
-    "/category",
-    status_code=status.HTTP_201_CREATED,
-    response_model=ResponseCategorySchema
-)
-async def create_category(
-    category_data: CreateCategorySchema,
-    use_case: CreateCategoryUseCase = Depends(get_create_category_case)
-) -> ResponseCategorySchema:
-    try:
-        return await use_case.execute(category_data)
-    except Exception as e:
-        print(e)
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+    except GetCategoryListException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=exc.get_detail()
+        )
 
 
 @router.get(
@@ -62,8 +55,27 @@ async def get_category(
 ) -> ResponseCategorySchema:
     try:
         return await use_case.execute(category_slug)
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+    except CategoryNotFoundException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=exc.get_detail()
+        )
+
+
+@router.post(
+    "/category",
+    status_code=status.HTTP_201_CREATED,
+    response_model=ResponseCategorySchema
+)
+async def create_category(
+    category_data: CreateCategorySchema,
+    use_case: CreateCategoryUseCase = Depends(get_create_category_case)
+) -> ResponseCategorySchema:
+    try:
+        return await use_case.execute(category_data)
+    except CategoryAlreadyExistsException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=exc.get_detail()
+        )
 
 
 @router.patch(
@@ -78,8 +90,14 @@ async def edit_category(
 ) -> ResponseCategorySchema:
     try:
         return await use_case.execute(category_slug, category_data)
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+    except CategoryNotFoundException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=exc.get_detail()
+        )
+    except GeneralCategoryCannotBeModifiedException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=exc.get_detail()
+        )
 
 
 @router.delete(
@@ -92,5 +110,15 @@ async def delete_category(
 ) -> None:
     try:
         await use_case.execute(category_slug)
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+    except CategoryNotFoundException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=exc.get_detail()
+        )
+    except CategoryNotDeletedException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=exc.get_detail()
+        )
+    except GeneralCategoryCannotBeModifiedException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=exc.get_detail()
+        )

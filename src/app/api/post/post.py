@@ -1,4 +1,4 @@
-from app.core.exceptions.user_domain import UserNotFoundByUsernameException
+from app.core.exceptions.user_domain_exception import UserNotFoundByUsernameException
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.api.post.depends import (
@@ -8,7 +8,7 @@ from app.api.post.depends import (
     get_get_post_by_title_case,
     get_get_post_list_case,
 )
-from app.core.exceptions.post_domain import (
+from app.core.exceptions.post_domain_exception import (
     GetPostListException,
     PostNotCreatedException,
     PostNotDeletedException,

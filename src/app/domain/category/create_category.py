@@ -1,5 +1,5 @@
-from slugify import slugify
-
+from app.core.exceptions.category_domain_exception import CategoryAlreadyExistsException
+from app.core.exceptions.database_exception import EntityAlreadyExistsException
 from app.infrastucture.postgresql.database import db
 from app.infrastucture.repositories.category import CategoryRepository
 from app.schemas.category import CreateCategorySchema, ResponseCategorySchema
@@ -13,12 +13,11 @@ class CreateCategoryUseCase:
     async def execute(
         self, category_data: CreateCategorySchema
     ) -> ResponseCategorySchema:
-        if not category_data.slug:
-            category_data.slug = slugify(
-                category_data.title, lowercase=True, max_length=256
-            )
-
-        async with self._db.session() as session:
-            category = await self._repo.create(session, category_data)
+        try:
+            async with self._db.session() as session:
+                category = await self._repo.create(session, category_data)
+        except EntityAlreadyExistsException:
+            # pyrefly: ignore [bad-argument-type]
+            raise CategoryAlreadyExistsException(category_slug=category_data.slug)
 
         return ResponseCategorySchema.model_validate(category)

@@ -1,3 +1,4 @@
+from sqlalchemy.orm import relationship
 from datetime import datetime
 
 from sqlalchemy import DateTime, String, Text, func
@@ -17,3 +18,8 @@ class CategoryModel(Base):
         DateTime(timezone=True), server_default=func.now()
     )
     is_published: Mapped[bool] = mapped_column(default=True)
+
+    posts: Mapped[list["PostModel"]] = relationship(
+        back_populates="category",
+        passive_deletes=True
+    )

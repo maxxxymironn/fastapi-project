@@ -4,7 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
 
 from app.core.constants import EMAIL_REGEX
 from app.schemas.post import ResponsePostSchemaWithourAuthor
-from app.services.check_username_validate import check_username
+from app.services.validate_attribute import validate_attribute
 
 
 class BaseUserSchema(BaseModel):
@@ -36,11 +36,11 @@ class EditUserSchema(BaseUserSchema):
 
     @field_validator("username", mode="after")
     @staticmethod
-    def check_first_name(username: str | None) -> str | None:
+    def validate_username(username: str | None) -> str | None:
         if not username:
             return None
 
-        check_username(username)
+        validate_attribute("username", username)
         return username
 
 
@@ -50,8 +50,8 @@ class CreateUserSchema(BaseUserSchema):
 
     @field_validator("username", mode="after")
     @staticmethod
-    def check_first_name(username: str) -> str:
-        check_username(username)
+    def validate_username(username: str) -> str:
+        validate_attribute("username", username)
         return username
 
 

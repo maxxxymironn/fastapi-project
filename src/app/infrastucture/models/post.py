@@ -14,7 +14,8 @@ class PostModel(Base):
         ForeignKey("users.username", ondelete="CASCADE")
     )
     category_slug: Mapped[str] = mapped_column(
-        ForeignKey("categories.slug", ondelete="SET NULL")
+        ForeignKey("categories.slug", ondelete="SET DEFAULT"),
+        server_default="general"
     )
     image_url: Mapped[str | None] = mapped_column(String)
     location_name: Mapped[str | None] = mapped_column(
@@ -34,5 +35,8 @@ class PostModel(Base):
     is_published: Mapped[bool] = mapped_column(default=True)
 
     author: Mapped["UserModel"] = relationship(
+        back_populates="posts"
+    )
+    category: Mapped["CategoryModel"] = relationship(
         back_populates="posts"
     )

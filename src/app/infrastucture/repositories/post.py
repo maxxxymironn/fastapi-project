@@ -20,7 +20,7 @@ class PostRepository:
     async def get_post_by_id(self, session: AsyncSession, id: int) -> PostModel:
         query = (
             select(self._model)
-            .where(self._model.id == id)
+            .where(self._model.id == id, self._model.is_published)
             .options(selectinload(self._model.author))
         )
 
@@ -34,6 +34,7 @@ class PostRepository:
     async def get_post_list(self, session: AsyncSession):
         query = (
             select(self._model)
+            .where(self._model.is_published)
             .options(selectinload(self._model.author))
         )
 
@@ -47,7 +48,7 @@ class PostRepository:
     ):
         query = (
             select(self._model)
-            .where(self._model.category_slug == category_slug)
+            .where(self._model.category_slug == category_slug, self._model.is_published)
             .options(selectinload(self._model.author))
         )
 

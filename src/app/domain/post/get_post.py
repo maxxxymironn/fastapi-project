@@ -1,5 +1,5 @@
 from app.core.exceptions.database_exception import EntityNotFoundException
-from app.core.exceptions.post_domain import PostNotFoundByIdException
+from app.core.exceptions.post_domain_exception import PostNotFoundByIdException
 from app.infrastucture.postgresql.database import db
 from app.infrastucture.repositories.post import PostRepository
 from app.schemas.post import ResponsePostSchema

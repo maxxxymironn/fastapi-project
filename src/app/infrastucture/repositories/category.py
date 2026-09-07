@@ -1,7 +1,13 @@
-from fastapi import HTTPException, status
 from sqlalchemy import delete, insert, select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio.session import AsyncSession
 
+from app.core.exceptions.database_exception import (
+    EntityAlreadyExistsException,
+    EntityListException,
+    EntityNotDeletedException,
+    EntityNotFoundException,
+)
 from app.infrastucture.models.category import CategoryModel
 from app.schemas.category import CreateCategorySchema, EditCategorySchema
 
@@ -16,12 +22,19 @@ class CategoryRepository:
         category: CategoryModel | None = await session.scalar(query)
 
         if not category:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+            raise EntityNotFoundException()
+
         return category
 
     async def get_list(self, session: AsyncSession):
         query = select(self._model)
-        return (await session.scalars(query)).all()
+
+        try:
+            category_list = (await session.scalars(query)).all()
+        except IntegrityError:
+            raise EntityListException()
+
+        return category_list
 
     async def create(
         self, session: AsyncSession, category_data: CreateCategorySchema
@@ -33,10 +46,9 @@ class CategoryRepository:
         )
 
         try:
-            category: CategoryModel | None = await session.scalar(query)
-        except Exception as e:
-            print(e)
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT)
+            category: CategoryModel = await session.scalar(query)
+        except IntegrityError:
+            raise EntityAlreadyExistsException()
 
         return category
 
@@ -54,8 +66,11 @@ class CategoryRepository:
 
         try:
             category: CategoryModel | None = await session.scalar(query)
-        except Exception:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+        except IntegrityError:
+            raise EntityAlreadyExistsException()
+
+        if not category:
+            raise EntityNotFoundException()
 
         return category
 
@@ -68,8 +83,8 @@ class CategoryRepository:
 
         try:
             is_deleted: bool = await session.scalar(query) is not None
-        except Exception:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+        except IntegrityError:
+            raise EntityNotDeletedException()
 
         if not is_deleted:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+            raise EntityNotFoundException()

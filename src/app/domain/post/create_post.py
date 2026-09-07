@@ -2,8 +2,8 @@ from app.core.exceptions.database_exception import (
     EntityNotCreatedException,
     EntityNotFoundException,
 )
-from app.core.exceptions.post_domain import PostNotCreatedException
-from app.core.exceptions.user_domain import UserNotFoundByUsernameException
+from app.core.exceptions.post_domain_exception import PostNotCreatedException
+from app.core.exceptions.user_domain_exception import UserNotFoundByUsernameException
 from app.infrastucture.postgresql.database import db
 from app.infrastucture.repositories.post import PostRepository
 from app.infrastucture.repositories.user import UserRepository
