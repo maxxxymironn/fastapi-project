@@ -3,7 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
 
 from app.core.constants import EMAIL_REGEX
-from app.schemas.post import ResponsePostSchemaWithourAuthor
+from app.schemas.post import ResponsePostSchemaWithourAuthorAndComments
 from app.services.validate_attribute import validate_attribute
 
 
@@ -60,6 +60,6 @@ class ResponseUserSchema(BaseUserSchema):
     password: SecretStr = Field(max_length=128)
     username: str = Field(max_length=128)
     created_at: datetime
-    posts: list[ResponsePostSchemaWithourAuthor]
+    posts: list[ResponsePostSchemaWithourAuthorAndComments]
 
     model_config = ConfigDict(from_attributes=True)

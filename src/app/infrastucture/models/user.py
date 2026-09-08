@@ -17,7 +17,7 @@ class UserModel(Base):
     last_name: Mapped[str | None] = mapped_column(String(128))
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
-    posts: Mapped[list["PostModel"]] = relationship(
+    posts: Mapped[list["PostModel"]] = relationship(  # ruff: ignore[undefined-name]
         back_populates="author",
         passive_deletes=True
     )

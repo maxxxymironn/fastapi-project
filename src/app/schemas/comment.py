@@ -8,12 +8,9 @@ class EditCommentSchema(BaseModel):
     image_url: str | None
 
 
-class CreateCommentSchema(EditCommentSchema):
-    author_id: int
-
-
-class ResponseCommentSchema(CreateCommentSchema):
+class ResponseCommentSchema(EditCommentSchema):
     id: int
+    author_id: int
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

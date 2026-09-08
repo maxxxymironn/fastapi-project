@@ -17,10 +17,10 @@ class PostModel(Base):
         ForeignKey("categories.slug", ondelete="SET DEFAULT"),
         server_default="general"
     )
-    image_url: Mapped[str | None] = mapped_column(String)
     location_name: Mapped[str | None] = mapped_column(
         ForeignKey("locations.name", ondelete="SET NULL")
     )
+    image_url: Mapped[str | None] = mapped_column(String)
     title: Mapped[str] = mapped_column(String(256))
     text: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(
@@ -34,12 +34,16 @@ class PostModel(Base):
     )
     is_published: Mapped[bool] = mapped_column(default=True)
 
-    author: Mapped["UserModel"] = relationship(
+    author: Mapped["UserModel"] = relationship(  # ruff: ignore[undefined-name]
         back_populates="posts"
     )
-    category: Mapped["CategoryModel"] = relationship(
+    category: Mapped["CategoryModel"] = relationship(  # ruff: ignore[undefined-name]
         back_populates="posts"
     )
-    location: Mapped["LocationModel"] = relationship(
+    location: Mapped["LocationModel"] = relationship(  # ruff: ignore[undefined-name]
         back_populates="posts"
+    )
+    comments: Mapped[list["CommentModel"]] = relationship(  # ruff: ignore[undefined-name]
+        back_populates="post",
+        passive_deletes=True
     )

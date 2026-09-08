@@ -21,7 +21,10 @@ class PostRepository:
         query = (
             select(self._model)
             .where(self._model.id == id, self._model.is_published)
-            .options(selectinload(self._model.author))
+            .options(
+                selectinload(self._model.author),
+                selectinload(self._model.comments)
+            )
         )
 
         post: PostModel | None = await session.scalar(query)
@@ -35,7 +38,10 @@ class PostRepository:
         query = (
             select(self._model)
             .where(self._model.is_published)
-            .options(selectinload(self._model.author))
+            .options(
+                selectinload(self._model.author),
+                selectinload(self._model.comments)
+            )
         )
 
         try:
@@ -49,7 +55,10 @@ class PostRepository:
         query = (
             select(self._model)
             .where(self._model.category_slug == category_slug, self._model.is_published)
-            .options(selectinload(self._model.author))
+            .options(
+                selectinload(self._model.author),
+                selectinload(self._model.comments)
+            )
         )
 
         try:
@@ -63,7 +72,10 @@ class PostRepository:
         query = (
             select(self._model)
             .where(self._model.location_name == location_name, self._model.is_published)
-            .options(selectinload(self._model.author))
+            .options(
+                selectinload(self._model.author),
+                selectinload(self._model.comments)
+            )
         )
 
         try:
@@ -81,7 +93,10 @@ class PostRepository:
                 self._model.category_slug == category_slug,
                 self._model.is_published
             )
-            .options(selectinload(self._model.author))
+            .options(
+                selectinload(self._model.author),
+                selectinload(self._model.comments)
+            )
         )
 
         try:
@@ -100,7 +115,10 @@ class PostRepository:
             insert(self._model)
             .values(values_dict)
             .returning(self._model)
-            .options(selectinload(self._model.author))
+            .options(
+                selectinload(self._model.author),
+                selectinload(self._model.comments)
+            )
         )
 
         try:
@@ -118,7 +136,10 @@ class PostRepository:
             .where(self._model.id == id)
             .values(post_data.model_dump(exclude_none=True, exclude_unset=True))
             .returning(self._model)
-            .options(selectinload(self._model.author))
+            .options(
+                selectinload(self._model.author),
+                selectinload(self._model.comments)
+            )
         )
 
         try:

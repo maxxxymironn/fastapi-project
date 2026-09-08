@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import DateTime, ForeignKey, Text, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infrastucture.postgresql.database import Base
 
@@ -16,4 +16,8 @@ class CommentModel(Base):
     post_id: Mapped[int] = mapped_column(ForeignKey("posts.id", ondelete="CASCADE"))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
+    )
+
+    post: Mapped["PostModel"] = relationship(  # ruff: ignore[undefined-name]
+        back_populates="comments"
     )

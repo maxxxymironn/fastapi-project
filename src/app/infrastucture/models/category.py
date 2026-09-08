@@ -18,7 +18,7 @@ class CategoryModel(Base):
     )
     is_published: Mapped[bool] = mapped_column(default=True)
 
-    posts: Mapped[list["PostModel"]] = relationship(
+    posts: Mapped[list["PostModel"]] = relationship(  # ruff: ignore[undefined-name]
         back_populates="category",
         passive_deletes=True
     )

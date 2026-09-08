@@ -6,12 +6,17 @@ from app.api.comment.depends import (
     get_edit_comment_case,
     get_get_comment_list_case,
 )
+from app.core.exceptions.comment_domain_exception import (
+    CommentNotCreatedException,
+    CommentNotDeletedException,
+    CommentNotFoundException,
+    GetCommentListException,
+)
 from app.domain.comment.create_comment import CreateCommentUseCase
 from app.domain.comment.delete_comment import DeleteCommentUseCase
 from app.domain.comment.edit_comment import EditCommentUseCase
 from app.domain.comment.get_comment_list import GetCommentListUseCase
 from app.schemas.comment import (
-    CreateCommentSchema,
     EditCommentSchema,
     ResponseCommentSchema,
 )
@@ -29,8 +34,10 @@ async def get_comment_list(
 ) -> list[ResponseCommentSchema]:
     try:
         return await use_case.execute(post_id)
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+    except GetCommentListException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=exc.get_detail()
+        )
 
 
 @router.post(
@@ -40,13 +47,16 @@ async def get_comment_list(
 )
 async def create_comment(
     post_id: int,
-    comment_data: CreateCommentSchema,
+    user_id: int,
+    comment_data: EditCommentSchema,
     use_case: CreateCommentUseCase = Depends(get_create_comment_case),
 ) -> ResponseCommentSchema:
     try:
-        return await use_case.execute(post_id, comment_data)
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+        return await use_case.execute(post_id, user_id, comment_data)
+    except CommentNotCreatedException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=exc.get_detail()
+        )
 
 
 @router.patch(
@@ -63,8 +73,10 @@ async def edit_comment(
 ) -> ResponseCommentSchema:
     try:
         return await use_case.execute(post_id, user_id, comment_id, comment_data)
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+    except CommentNotFoundException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=exc.get_detail()
+        )
 
 
 @router.delete("/posts/{post_id}/comments", status_code=status.HTTP_204_NO_CONTENT)
@@ -76,7 +88,11 @@ async def delete_comment(
 ) -> None:
     try:
         await use_case.execute(post_id, user_id, comment_id)
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
-
-    raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
+    except CommentNotFoundException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=exc.get_detail()
+        )
+    except CommentNotDeletedException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=exc.get_detail()
+        )
