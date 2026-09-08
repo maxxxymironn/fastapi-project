@@ -105,11 +105,16 @@ class PostRepository:
             raise EntityListException()
 
     async def create_post(
-        self, session: AsyncSession, author_username: str, post_data: CreatePostSchema
+        self,
+        session: AsyncSession,
+        author_username: str,
+        post_data: CreatePostSchema,
+        image_path: str | None
     ) -> PostModel:
         values_dict = post_data.model_dump(exclude_none=True, exclude_unset=True)
-        values_dict.update({"author_username": author_username})
-        print(values_dict)
+        values_dict.update(
+            {"author_username": author_username, "image_path": image_path}
+        )
 
         query = (
             insert(self._model)
@@ -129,12 +134,14 @@ class PostRepository:
         return post
 
     async def update_post(
-        self, session: AsyncSession, id: int, post_data: EditPostSchema
+        self, session: AsyncSession, id: int, post_data: EditPostSchema, post_image
     ) -> PostModel:
+        post_data_dict = post_data.model_dump(exclude_none=True, exclude_unset=True)
+        post_data_dict.update({"image_path": post_image})
         query = (
             update(self._model)
             .where(self._model.id == id)
-            .values(post_data.model_dump(exclude_none=True, exclude_unset=True))
+            .values(post_data_dict)
             .returning(self._model)
             .options(
                 selectinload(self._model.author),

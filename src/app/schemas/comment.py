@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict
 
 class EditCommentSchema(BaseModel):
     text: str
-    image_url: str | None
+    image_path: str | None
 
 
 class ResponseCommentSchema(EditCommentSchema):

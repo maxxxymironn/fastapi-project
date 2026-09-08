@@ -7,7 +7,6 @@ from app.schemas.comment import ResponseCommentSchema
 
 class BasePostSchema(BaseModel):
     is_published: bool | None = True
-    image_url: str | None = None
 
 
 class EditPostSchema(BasePostSchema):
@@ -20,7 +19,9 @@ class EditPostSchema(BasePostSchema):
 
     @field_validator("location_name", mode="after")
     @staticmethod
-    def validate_location_name(location_name: str) -> str:
+    def validate_location_name(location_name: str | None) -> str | None:
+        if not location_name:
+            return None
         return location_name.lower()
 
 
@@ -56,6 +57,7 @@ class ResponsePostSchemaWithourAuthorAndComments(CreatePostSchema):
     id: int
     created_at: datetime
     updated_at: datetime
+    image_path: str | None
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -20,7 +20,7 @@ class PostModel(Base):
     location_name: Mapped[str | None] = mapped_column(
         ForeignKey("locations.name", ondelete="SET NULL")
     )
-    image_url: Mapped[str | None] = mapped_column(String)
+    image_path: Mapped[str | None] = mapped_column(String)
     title: Mapped[str] = mapped_column(String(256))
     text: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(
