@@ -1,16 +1,8 @@
 from datetime import datetime
 
-from fastapi import (
-    APIRouter,
-    Depends,
-    File,
-    Form,
-    HTTPException,
-    Query,
-    UploadFile,
-    status,
-)
+from fastapi import APIRouter, Depends, Form, HTTPException, Query, UploadFile, status
 from fastapi.responses import FileResponse
+from pydantic import ValidationError
 
 from app.api.post.depends import (
     get_create_post_case,
@@ -79,11 +71,7 @@ async def get_post_image_by_id(
 ) -> FileResponse:
     try:
         return await use_case.execute(id)
-    except PostNotFoundByIdException as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=exc.get_detail()
-        )
-    except NoImageException as exc:
+    except (PostNotFoundByIdException, NoImageException) as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=exc.get_detail()
         )
@@ -96,11 +84,11 @@ async def create_post(
     author_username: str,
     title: str = Form(...),
     text: str = Form(...),
-    publicated_at: datetime | None = Form(None),
     category_slug: str = Form(...),
+    publicated_at: datetime | None = Form(None),
     location_name: str | None = Form(None),
     is_published: bool | None = Form(None),
-    image: UploadFile | None = File(None),
+    image: UploadFile | None = None,
     use_case: CreatePostUseCase = Depends(get_create_post_case),
 ) -> ResponsePostSchema:
     try:
@@ -112,6 +100,12 @@ async def create_post(
             category_slug=category_slug,
             location_name=location_name
         )
+    except ValidationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=exc.errors()
+        )
+
+    try:
         return await use_case.execute(author_username, post_data, image)
     except PostNotCreatedException as exc:
         raise HTTPException(
@@ -121,38 +115,42 @@ async def create_post(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=exc.get_detail()
         )
-    except UploadFileIsNotImageException as exc:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=exc.get_detail()
-        )
-    except UploadFileHasNotNameException as exc:
+    except (UploadFileIsNotImageException, UploadFileHasNotNameException) as exc:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=exc.get_detail()
         )
 
 
 @router.patch(
-    "/posts/{id}", status_code=status.HTTP_200_OK, response_model=ResponsePostSchema
+    "/posts/{post_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=ResponsePostSchema
 )
 async def edit_post(
-    id: int,
+    post_id: int,
     title: str | None = Form(None),
     text: str | None = Form(None),
     category_slug: str | None = Form(None),
     location_name: str | None = Form(None),
     is_published: bool | None = Form(None),
-    image: UploadFile | None = File(None),
+    image: UploadFile | None = None,
     use_case: EditPostUseCase = Depends(get_edit_post_case),
 ) -> ResponsePostSchema:
-    post_data = EditPostSchema(
-        title=title,
-        text=text,
-        category_slug=category_slug,
-        location_name=location_name,
-        is_published=is_published
-    )
     try:
-        return await use_case.execute(id, post_data, image)
+        post_data = EditPostSchema(
+            title=title,
+            text=text,
+            category_slug=category_slug,
+            location_name=location_name,
+            is_published=is_published
+        )
+    except ValidationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=exc.errors()
+        )
+
+    try:
+        return await use_case.execute(post_id, post_data, image)
     except PostNotCreatedException as exc:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail=exc.get_detail()
@@ -161,11 +159,7 @@ async def edit_post(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=exc.get_detail()
         )
-    except UploadFileIsNotImageException as exc:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=exc.get_detail()
-        )
-    except UploadFileHasNotNameException as exc:
+    except (UploadFileIsNotImageException, UploadFileHasNotNameException) as exc:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=exc.get_detail()
         )

@@ -10,7 +10,6 @@ from app.core.exceptions.database_exception import (
 )
 from app.infrastucture.models.comment import CommentModel
 from app.infrastucture.models.post import PostModel
-from app.schemas.comment import EditCommentSchema
 
 
 class CommentRepository:
@@ -32,16 +31,38 @@ class CommentRepository:
         except IntegrityError:
             raise EntityListException()
 
+    async def get_comment_by_id(
+        self,
+        session: AsyncSession,
+        post_id: int,
+        comment_id: int
+    ) -> CommentModel:
+        query = (
+            select(self._model)
+            .where(
+                self._model.post_id == post_id,
+                self._model.id == comment_id
+            )
+        )
+
+        comment: CommentModel | None = await session.scalar(query)
+        if not comment:
+            raise EntityNotFoundException()
+
+        return comment
+
     async def create_comment(
         self, session: AsyncSession, post_id: int, user_id: int,
-        comment_data: EditCommentSchema
+        comment_text: str, image_path: str | None
     ) -> CommentModel:
-        comment_data_dict = comment_data.model_dump()
-        comment_data_dict.update({"post_id": post_id, "author_id": user_id})
-
         query = (
             insert(self._model)
-            .values(comment_data_dict)
+            .values(
+                text=comment_text,
+                post_id=post_id,
+                author_id=user_id,
+                image_path=image_path
+            )
             .returning(self._model)
         )
 
@@ -54,11 +75,11 @@ class CommentRepository:
 
     async def edit_comment(
         self, session: AsyncSession, post_id: int, user_id: int,
-        comment_id: int, comment_data: EditCommentSchema,
+        comment_id: int, comment_text: str | None, image_path: str | None
     ) -> CommentModel:
         query = (
             update(self._model)
-            .values(comment_data.model_dump())
+            .values(text=comment_text, image_path=image_path)
             .where(
                 self._model.id == comment_id,
                 self._model.post_id == post_id,
