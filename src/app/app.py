@@ -24,6 +24,6 @@ def create_app() -> FastAPI:
     app.include_router(comment_router, prefix="/api/v1", tags=["Comment APIs"])
     app.include_router(category_router, prefix="/api/v1", tags=["Category APIs"])
     app.include_router(location_router, prefix="/api/v1", tags=["Location APIs"])
-    app.include_router(auth_router, prefix="/api/v1", tags=["Auth API"])
+    app.include_router(auth_router, tags=["Auth API"])
 
     return app

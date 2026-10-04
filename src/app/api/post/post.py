@@ -31,6 +31,7 @@ from app.domain.post.get_post import GetPostByIdUseCase
 from app.domain.post.get_post_image import GetPostImageByIdUseCase
 from app.domain.post.get_post_list import GetPostListUseCase
 from app.schemas.post import CreatePostSchema, EditPostSchema, ResponsePostSchema
+from app.services.auth import AuthService
 
 router = APIRouter()
 
@@ -178,4 +179,51 @@ async def delete_post(
     except PostNotFoundByIdException as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=exc.get_detail()
+        )
+
+
+@router.post(
+    "/posts/create_with_login",
+    status_code=status.HTTP_201_CREATED,
+    response_model=ResponsePostSchema,
+    dependencies=[Depends(AuthService.get_current_user)]
+)
+async def create_post_with_login(
+    author_username: str,
+    title: str = Form(...),
+    text: str = Form(...),
+    category_slug: str = Form(...),
+    publicated_at: datetime | None = Form(None),
+    location_name: str | None = Form(None),
+    is_published: bool | None = Form(None),
+    image: UploadFile | None = None,
+    use_case: CreatePostUseCase = Depends(get_create_post_case),
+) -> ResponsePostSchema:
+    try:
+        post_data = CreatePostSchema(
+            is_published=is_published,
+            title=title,
+            text=text,
+            publicated_at=publicated_at,
+            category_slug=category_slug,
+            location_name=location_name
+        )
+    except ValidationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=exc.errors()
+        )
+
+    try:
+        return await use_case.execute(author_username, post_data, image)
+    except PostNotCreatedException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=exc.get_detail()
+        )
+    except UserNotFoundByUsernameException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=exc.get_detail()
+        )
+    except (UploadFileIsNotImageException, UploadFileHasNotNameException) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=exc.get_detail()
         )

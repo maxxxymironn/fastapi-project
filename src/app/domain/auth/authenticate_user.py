@@ -1,10 +1,12 @@
 from app.core.exceptions.database_exception import EntityNotFoundException
 from app.core.exceptions.user_domain_exception import (
     UserNotFoundByUsernameException,
+    WrongPasswordException,
 )
 from app.infrastucture.postgresql.database import db
 from app.infrastucture.repositories.user import UserRepository
 from app.schemas.user import ResponseUserSchema
+from app.services.password import verify_password
 
 
 class AuthenticateUserUseCase:
@@ -19,6 +21,7 @@ class AuthenticateUserUseCase:
         except EntityNotFoundException:
             raise UserNotFoundByUsernameException(username=login)
 
-        # verify password
+        if not verify_password(password, user.password):
+            raise WrongPasswordException()
 
         return ResponseUserSchema.model_validate(user)
