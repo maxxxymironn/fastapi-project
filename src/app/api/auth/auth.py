@@ -4,10 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.api.auth.depends import get_authenticate_user_case, get_create_acess_token_case
-from app.core.exceptions.user_domain_exception import (
-    UserNotFoundByUsernameException,
-    WrongPasswordException,
-)
+from app.core.exceptions.auth_exception import WrongPasswordException
+from app.core.exceptions.user_domain_exception import UserNotFoundByUsernameException
 from app.domain.auth.authenticate_user import AuthenticateUserUseCase
 from app.domain.auth.create_access_token import CreateAccessTokenUseCase
 from app.schemas.auth import TokenSchema

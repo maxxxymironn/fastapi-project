@@ -24,6 +24,8 @@ from app.schemas.category import (
     EditCategorySchema,
     ResponseCategorySchema,
 )
+from app.schemas.user import ResponseUserSchema
+from app.services.auth import AuthService
 
 router = APIRouter()
 
@@ -68,7 +70,8 @@ async def get_category(
 )
 async def create_category(
     category_data: CreateCategorySchema,
-    use_case: CreateCategoryUseCase = Depends(get_create_category_case)
+    use_case: CreateCategoryUseCase = Depends(get_create_category_case),
+    current_user: ResponseUserSchema = Depends(AuthService.is_admin)
 ) -> ResponseCategorySchema:
     try:
         return await use_case.execute(category_data)
@@ -86,7 +89,8 @@ async def create_category(
 async def edit_category(
     category_slug: str,
     category_data: EditCategorySchema,
-    use_case: EditCategoryUseCase = Depends(get_edit_category_case)
+    use_case: EditCategoryUseCase = Depends(get_edit_category_case),
+    current_user: ResponseUserSchema = Depends(AuthService.is_admin)
 ) -> ResponseCategorySchema:
     try:
         return await use_case.execute(category_slug, category_data)
@@ -106,7 +110,8 @@ async def edit_category(
 )
 async def delete_category(
     category_slug: str,
-    use_case: DeleteCategoryUseCase = Depends(get_delete_category_case)
+    use_case: DeleteCategoryUseCase = Depends(get_delete_category_case),
+    current_user: ResponseUserSchema = Depends(AuthService.is_admin)
 ) -> None:
     try:
         await use_case.execute(category_slug)

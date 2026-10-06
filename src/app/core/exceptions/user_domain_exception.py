@@ -50,8 +50,3 @@ class UserNotDeletedException(BaseDomainException):
         )
 
         super().__init__(detail=self._exception_text_template)
-
-
-class WrongPasswordException(BaseDomainException):
-    def __init__(self) -> None:
-        super().__init__(detail="Wrong password")

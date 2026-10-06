@@ -45,6 +45,7 @@ class EditUserSchema(BaseUserSchema):
 
 
 class CreateUserSchema(BaseUserSchema):
+    is_admin: bool = False
     username: str = Field(min_length=5, max_length=128, examples=["username"])
     password: str = Field(min_length=8, max_length=128, examples=["password"])
 
@@ -57,6 +58,7 @@ class CreateUserSchema(BaseUserSchema):
 
 class ResponseUserSchema(BaseUserSchema):
     id: int
+    is_admin: bool
     password: SecretStr = Field(max_length=128)
     username: str = Field(max_length=128)
     created_at: datetime

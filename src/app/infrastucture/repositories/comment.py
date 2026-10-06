@@ -100,8 +100,7 @@ class CommentRepository:
             delete(self._model)
             .where(
                 self._model.id == comment_id,
-                self._model.post_id == post_id,
-                self._model.author_id == user_id,
+                self._model.post_id == post_id
             )
             .returning(self._model)
         )

@@ -17,6 +17,8 @@ from app.domain.location.delete_location import DeleteLocationUseCase
 from app.domain.location.get_location import GetLocationUseCase
 from app.domain.location.get_location_list import GetLocationListUseCase
 from app.schemas.location import CreateLocationSchema, ResponseLocationSchema
+from app.schemas.user import ResponseUserSchema
+from app.services.auth import AuthService
 
 router = APIRouter()
 
@@ -61,6 +63,7 @@ async def get_location(
 async def create_location(
     location_data: CreateLocationSchema,
     use_case: CreateLocationUseCase = Depends(get_create_location_case),
+    user: ResponseUserSchema = Depends(AuthService.get_current_user)
 ) -> ResponseLocationSchema:
     try:
         return await use_case.execute(location_data)
@@ -74,6 +77,7 @@ async def create_location(
 async def delete_location(
     location_name: str,
     use_case: DeleteLocationUseCase = Depends(get_delete_location_case),
+    user: ResponseUserSchema = Depends(AuthService.is_admin)
 ) -> None:
     try:
         await use_case.execute(location_name)

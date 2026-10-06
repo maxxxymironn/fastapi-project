@@ -1,5 +1,6 @@
 from fastapi import UploadFile
 
+from app.core.exceptions.auth_exception import ForbiddenException
 from app.core.exceptions.database_exception import (
     EntityNotCreatedException,
     EntityNotFoundException,
@@ -20,12 +21,15 @@ class EditPostUseCase:
         self._repo = PostRepository()
 
     async def execute(
-        self, id: int, post_data: EditPostSchema, post_image: UploadFile | None
+        self, username: str, id: int, post_data: EditPostSchema, post_image: UploadFile | None
     ) -> ResponsePostSchema:
         image_path: str | None = get_image_name(post_image)
 
         try:
             async with self._db.session() as session:
+                post = await self._repo.get_post_by_id(session, id)
+                if post.author_username != username:
+                    raise ForbiddenException()
                 post = await self._repo.update_post(session, id, post_data, image_path)
         except EntityNotFoundException:
             raise PostNotFoundByIdException(id)

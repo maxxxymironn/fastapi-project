@@ -19,6 +19,7 @@ from app.domain.user.edit_user import EditUserUseCase
 from app.domain.user.get_user import GetUserByUsernameUseCase
 from app.domain.user.get_user_list import GetUserListUseCase
 from app.schemas.user import CreateUserSchema, EditUserSchema, ResponseUserSchema
+from app.services.auth import AuthService
 
 router = APIRouter()
 
@@ -53,11 +54,12 @@ async def get_user_list(
 
 
 @router.post(
-    "/profile", status_code=status.HTTP_201_CREATED, response_model=ResponseUserSchema
+    "/users", status_code=status.HTTP_201_CREATED, response_model=ResponseUserSchema
 )
 async def create_user(
     user_data: CreateUserSchema,
     use_case: CreateUserUseCase = Depends(get_create_user_case),
+    dependence: None = Depends(AuthService.is_anonymous)
 ) -> ResponseUserSchema:
     try:
         return await use_case.execute(user_data)
@@ -68,17 +70,17 @@ async def create_user(
 
 
 @router.patch(
-    "/profile/{username}",
+    "/profile",
     status_code=status.HTTP_200_OK,
-    response_model=ResponseUserSchema,
+    response_model=ResponseUserSchema
 )
 async def edit_profile(
-    username: str,
     user_data: EditUserSchema,
     use_case: EditUserUseCase = Depends(get_edit_user_case),
+    user: ResponseUserSchema = Depends(AuthService.get_current_user)
 ) -> ResponseUserSchema:
     try:
-        return await use_case.execute(username, user_data)
+        return await use_case.execute(user.username, user_data)
     except UserNotFoundByUsernameException as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=exc.get_detail()
@@ -89,12 +91,13 @@ async def edit_profile(
         )
 
 
-@router.delete("/profiles/{username}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/profile/", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(
-    username: str, use_case: DeleteUserUseCase = Depends(get_delete_user_case)
+    use_case: DeleteUserUseCase = Depends(get_delete_user_case),
+    user: ResponseUserSchema = Depends(AuthService.get_current_user)
 ) -> None:
     try:
-        return await use_case.execute(username)
+        return await use_case.execute(user.username)
     except UserNotFoundByUsernameException as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=exc.get_detail()

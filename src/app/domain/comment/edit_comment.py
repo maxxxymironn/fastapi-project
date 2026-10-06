@@ -1,5 +1,6 @@
 from fastapi import UploadFile
 
+from app.core.exceptions.auth_exception import ForbiddenException
 from app.core.exceptions.comment_domain_exception import CommentNotFoundException
 from app.core.exceptions.database_exception import EntityNotFoundException
 from app.infrastucture.postgresql.database import db
@@ -21,6 +22,12 @@ class EditCommentUseCase:
 
         try:
             async with self._db.session() as session:
+                comment = await self._repo.get_comment_by_id(
+                    session, post_id, comment_id
+                )
+                if comment.author_id != user_id:
+                    raise ForbiddenException()
+
                 comment = await self._repo.edit_comment(
                     session, post_id, user_id, comment_id, comment_text, image_path
                 )

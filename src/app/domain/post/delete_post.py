@@ -1,3 +1,4 @@
+from app.core.exceptions.auth_exception import ForbiddenException
 from app.core.exceptions.database_exception import (
     EntityNotDeletedException,
     EntityNotFoundException,
@@ -15,11 +16,15 @@ class DeletePostUseCase:
         self._db = db
         self._repo = PostRepository()
 
-    async def execute(self, id: int) -> None:
+    async def execute(self, post_id: int, username: str, is_user_admin: bool) -> None:
         try:
             async with self._db.session() as session:
-                await self._repo.delete_post(session, id)
+                post = await self._repo.get_post_by_id(session, post_id)
+                if post.author_username != username and not is_user_admin:
+                    raise ForbiddenException()
+
+                await self._repo.delete_post(session, post_id)
         except EntityNotDeletedException:
-            raise PostNotDeletedException(id)
+            raise PostNotDeletedException(post_id)
         except EntityNotFoundException:
-            raise PostNotFoundByIdException(id)
+            raise PostNotFoundByIdException(post_id)

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, String, func
+from sqlalchemy import Boolean, DateTime, String, func, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infrastucture.postgresql.database import Base
@@ -10,6 +10,9 @@ class UserModel(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    is_admin: Mapped[str] = mapped_column(
+        Boolean, default=False, server_default=text("false")
+    )
     username: Mapped[str] = mapped_column(String(128), unique=True)
     password: Mapped[str] = mapped_column(String(128))
     email: Mapped[str | None] = mapped_column(String(128), unique=True)

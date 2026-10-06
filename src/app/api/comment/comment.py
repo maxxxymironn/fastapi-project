@@ -8,6 +8,7 @@ from app.api.comment.depends import (
     get_get_comment_image_by_id_case,
     get_get_comment_list_case,
 )
+from app.core.exceptions.auth_exception import ForbiddenException
 from app.core.exceptions.comment_domain_exception import (
     CommentNotCreatedException,
     CommentNotDeletedException,
@@ -22,6 +23,8 @@ from app.domain.comment.edit_comment import EditCommentUseCase
 from app.domain.comment.get_comment_image import GetCommentImageByIdUseCase
 from app.domain.comment.get_comment_list import GetCommentListUseCase
 from app.schemas.comment import ResponseCommentSchema
+from app.schemas.user import ResponseUserSchema
+from app.services.auth import AuthService
 
 router = APIRouter()
 
@@ -70,13 +73,13 @@ async def get_comment_image(
 )
 async def create_comment(
     post_id: int,
-    user_id: int,
     text: str = Form(...),
     image: UploadFile | None = None,
     use_case: CreateCommentUseCase = Depends(get_create_comment_case),
+    user: ResponseUserSchema = Depends(AuthService.get_current_user)
 ) -> ResponseCommentSchema:
     try:
-        return await use_case.execute(post_id, user_id, text, image)
+        return await use_case.execute(post_id, user.id, text, image)
     except CommentNotCreatedException as exc:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail=exc.get_detail()
@@ -90,14 +93,18 @@ async def create_comment(
 )
 async def edit_comment(
     post_id: int,
-    user_id: int = Form(...),
     comment_id: int = Form(...),
     text: str | None = Form(...),
     image: UploadFile | None = None,
     use_case: EditCommentUseCase = Depends(get_edit_comment_case),
+    user: ResponseUserSchema = Depends(AuthService.get_current_user)
 ) -> ResponseCommentSchema:
     try:
-        return await use_case.execute(post_id, user_id, comment_id, text, image)
+        return await use_case.execute(post_id, user.id, comment_id, text, image)
+    except ForbiddenException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail=exc.get_detail()
+        )
     except CommentNotFoundException as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=exc.get_detail()
@@ -107,12 +114,16 @@ async def edit_comment(
 @router.delete("/posts/{post_id}/comments", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_comment(
     post_id: int,
-    user_id: int,
     comment_id: int,
     use_case: DeleteCommentUseCase = Depends(get_delete_comment_case),
+    user: ResponseUserSchema = Depends(AuthService.get_current_user)
 ) -> None:
     try:
-        await use_case.execute(post_id, user_id, comment_id)
+        await use_case.execute(post_id, comment_id, user.id, user.is_admin)
+    except ForbiddenException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail=exc.get_detail()
+        )
     except CommentNotFoundException as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=exc.get_detail()
