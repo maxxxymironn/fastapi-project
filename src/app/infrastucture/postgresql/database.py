@@ -1,13 +1,15 @@
 from contextlib import asynccontextmanager
 
+from sqlalchemy import MetaData
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import declarative_base
+
+from app.core.config import settings
 
 
 class Database:
     def __init__(self):
-        self._db_url = "postgresql+asyncpg://user:password@localhost:5432/app_db"
-        self._engine = create_async_engine(self._db_url)
+        self._engine = create_async_engine(settings.postgres_url)
         self._session_factory = async_sessionmaker(
             bind=self._engine,
             autocommit=False,
@@ -28,4 +30,5 @@ class Database:
 
 
 db = Database()
+metadata = MetaData(schema=settings.POSTGRES_SCHEMA)
 Base = declarative_base()

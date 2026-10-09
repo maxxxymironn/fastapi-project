@@ -1,10 +1,10 @@
 import asyncio
-from logging.config import fileConfig
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 from sqlalchemy.ext.asyncio import AsyncEngine
 
+from src.app.core.config import settings
 from app.infrastucture.models.category import CategoryModel
 from app.infrastucture.models.comment import CommentModel
 from app.infrastucture.models.location import LocationModel
@@ -12,18 +12,20 @@ from app.infrastucture.models.post import PostModel
 from app.infrastucture.models.user import UserModel
 from app.infrastucture.postgresql.database import Base
 
+CREATE_SCHEMA_QUERY = f"CREATE SCHEMA IF NOT EXISTS {settings.POSTGRES_SCHEMA}"
+
 config = context.config
 
-if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
-
-config.set_main_option(
-    "sqlalchemy.url",
-    "postgresql+asyncpg://user:password@localhost:5432/app_db"
-)
-
-
 target_metadata = Base.metadata
+
+# if config.config_file_name is not None:
+#     fileConfig(config.config_file_name)
+
+config.set_main_option("sqlalchemy.url", settings.postgres_url)
+
+
+def filter_foreign_schemas(name, type_, parent_names):
+    return type_ != "schema" or name == settings.POSTGRES_SCHEMA
 
 
 def run_migrations_offline() -> None:
@@ -53,10 +55,14 @@ def run_migrations_offline() -> None:
 def do_run_migrations(connection) -> None:
     context.configure(
         connection=connection,
-        target_metadata=target_metadata
+        target_metadata=target_metadata,
+        version_table_schema=settings.POSTGRES_SCHEMA,
+        include_schemas=True,
+        include_name=filter_foreign_schemas
     )
 
     with context.begin_transaction():
+        context.execute(CREATE_SCHEMA_QUERY)
         context.run_migrations()
 
 

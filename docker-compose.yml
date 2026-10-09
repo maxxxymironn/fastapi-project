@@ -5,16 +5,45 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: app_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - '5432:5432'
+      - '127.0.0.1:5432:5432'
+    networks:
+      - app_network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U user -d app_db" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
+
+  app:
+    image: application
+    volumes:
+      - ./src:/app/src
+      - ./images:/app/images
+    env_file:
+      - .env
+    ports:
+      - '127.0.0.1:8020:8000'
+    build:
+      context: .
+    pull_policy: build
+    entrypoint: ["sh", "./src/start.sh"]
+    networks:
+      - app_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+networks:
+  app_network:
+    name: app_network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
 
 volumes:
   db_data:
