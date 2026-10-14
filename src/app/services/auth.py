@@ -10,7 +10,7 @@ from app.core.exceptions.auth_exception import (
     CredentialsException,
     NotAdminException,
 )
-from app.core.exceptions.user_domain_exception import UserNotFoundByUsernameException
+from app.core.exceptions.database_exception import EntityNotFoundException
 from app.infrastucture.postgresql.database import Database, db
 from app.infrastucture.repositories.user import UserRepository
 from app.schemas.user import ResponseUserSchema
@@ -46,7 +46,7 @@ class AuthService:
             async with _db.session() as session:
                 user = await _repo.get_user(session=session, username=username)
                 pass
-        except UserNotFoundByUsernameException:
+        except EntityNotFoundException:
             return None
 
         return ResponseUserSchema.model_validate(obj=user)

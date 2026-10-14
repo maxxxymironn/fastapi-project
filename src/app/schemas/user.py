@@ -62,6 +62,7 @@ class ResponseUserSchema(BaseUserSchema):
     password: SecretStr = Field(max_length=128)
     username: str = Field(max_length=128)
     created_at: datetime
+    hashed_refresh_token: str | None = Field(max_length=128)
     posts: list[ResponsePostSchemaWithourAuthorAndComments]
 
     model_config = ConfigDict(from_attributes=True)

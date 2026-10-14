@@ -19,6 +19,7 @@ class UserModel(Base):
     first_name: Mapped[str | None] = mapped_column(String(128))
     last_name: Mapped[str | None] = mapped_column(String(128))
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    hashed_refresh_token: Mapped[str | None] = mapped_column(String(128))
 
     posts: Mapped[list["PostModel"]] = relationship(  # ruff: ignore[undefined-name]
         back_populates="author",
